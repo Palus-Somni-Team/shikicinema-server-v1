@@ -1,2 +1,150 @@
-# TODO: описать существующие и необходимые роуты из API v1
-# которые нужно будет перенести в этот проект
+openapi: 3.0.0
+
+info:
+  title: Empowered API v1
+  version: 1.0.0
+
+  contact:
+    email: th3smartchan@gmail.com
+
+  license:
+    name: Mozilla Public License Version 2.0
+    url: https://www.mozilla.org/en-US/MPL/2.0/
+
+servers:
+  - url: https://smarthard.net/api/
+    description: Production server
+  - url: https://dev.smarthard.net/api/
+    description: Development server
+
+paths:
+  /shikivideos:
+    post:
+      summary: Загрузить новое видео
+      tags: [Videos]
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: anime_id
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: episode
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: kind
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Kind'
+        - name: language
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: author
+          in: query
+          schema:
+            type: string
+        - name: quality
+          in: query
+          schema:
+            $ref: '#/components/schemas/Quality'
+        - name: anime_english
+          deprecated: true
+          in: query
+          schema:
+            type: string
+        - name: anime_russian
+          deprecated: true
+          in: query
+          schema:
+            type: string
+      responses:
+        201:
+          description: Успешно загружено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        202:
+          description: Этот URL уже загружен
+        400:
+          description: Неверные обязательные параметры
+
+components:
+  schemas:
+    Kind:
+      description: Тип озвучки
+      type: string
+      enum: 
+        - озвучка
+        - субтитры
+        - оригинал
+
+    Quality:
+      description: Качество видео
+      type: string
+      enum: 
+        - bd
+        - dvd
+        - tv
+        - vhs
+        - web
+        - unknown
+
+    Video:
+      type: object
+      properties:
+        id:
+          description: ID
+          type: integer
+          example: 882657
+        url:
+          description: Ссылка для встраивания в плеер
+          type: string
+          example: http://video.sibnet.ru/shell.php?videoid=1503010
+        anime_id:
+          description: ID аниме на Шикимори
+          type: integer
+          example: 6
+        episode:
+          description: Номер эпизода
+          type: integer
+          example: 7
+        kind:
+          $ref: '#/components/schemas/Kind'
+        language:
+          description: Язык
+          type: string
+          example: russian
+        quality:
+          $ref: '#/components/schemas/Quality'
+        author:
+          description: Автор
+          type: string
+          example: 2x2 (Мега-Аниме)
+        watches_count:
+          description: Количество просмотров
+          type: integer
+        uploader:
+          description: ID загрузившего пользователя Шикимори
+          type: string
+          example: 278015
+        anime_english:
+          deprecated: true
+          description: Название на английском
+          type: string
+          example: Trigun
+        anime_russian:
+          deprecated: true
+          description: Название на русском
+          type: string
+          example: Триган
+        
