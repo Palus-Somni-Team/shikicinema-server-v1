@@ -3,10 +3,8 @@ openapi: 3.0.0
 info:
   title: Empowered API v1
   version: 1.0.0
-
   contact:
     email: th3smartchan@gmail.com
-
   license:
     name: Mozilla Public License Version 2.0
     url: https://www.mozilla.org/en-US/MPL/2.0/
@@ -21,23 +19,31 @@ paths:
   /shikivideos:
     post:
       summary: Загрузить новое видео
+      description: Создаёт новую запись в архиве видео. Требуется авторизация.
       tags: [Videos]
+      security:
+        - BearerAuth: []
       parameters:
         - name: url
           in: query
           required: true
+          description: Прямая ссылка на видео/плеер (должна быть уникальной)
           schema:
             type: string
+            maxLength: 2048
         - name: anime_id
           in: query
           required: true
+          description: ID аниме с Shikimori
           schema:
             type: integer
         - name: episode
           in: query
           required: true
+          description: Номер эпизода
           schema:
             type: integer
+            minimum: 1
         - name: kind
           in: query
           required: true
@@ -46,44 +52,281 @@ paths:
         - name: language
           in: query
           required: true
+          description: Язык озвучки/субтитров (ISO 639-1)
           schema:
             type: string
         - name: author
           in: query
+          description: Автор озвучки/субтитров
           schema:
             type: string
+            maxLength: 256
         - name: quality
           in: query
           schema:
             $ref: '#/components/schemas/Quality'
         - name: anime_english
-          deprecated: true
           in: query
+          deprecated: true
+          description: Устарело — будет браться из справочника аниме
           schema:
             type: string
         - name: anime_russian
-          deprecated: true
           in: query
+          deprecated: true
+          description: Устарело — будет браться из справочника аниме
           schema:
             type: string
       responses:
-        201:
+        '201':
           description: Успешно загружено
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Video'
-        202:
-          description: Этот URL уже загружен
-        400:
-          description: Неверные обязательные параметры
+        '202':
+          description: Этот URL уже существует в архиве
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /shikivideos/search:
+    get:
+      summary: Поиск видео по названию аниме
+      description: Ищет видео по названию аниме
+      tags: [Videos]
+      parameters:
+        - name: title
+          in: query
+          description: Название аниме (русское или английское)
+          schema:
+            type: string
+        - $ref: '#/components/parameters/EpisodeQuery'
+        - $ref: '#/components/parameters/KindQuery'
+        - $ref: '#/components/parameters/LanguageQuery'
+        - $ref: '#/components/parameters/QualityQuery'
+        - $ref: '#/components/parameters/AuthorQuery'
+        - $ref: '#/components/parameters/UploaderQuery'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Результаты поиска
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
+
+  /shikivideos/authors:
+    get:
+      summary: Поиск авторов озвучки/субтитров
+      description: |
+        Без параметров возвращает всех уникальных авторов
+      tags: [Videos]
+      parameters:
+        - name: name
+          in: query
+          description: Поиск автора по подстроке
+          schema:
+            type: string
+            minLength: 1
+        - name: anime_id
+          in: query
+          description: Фильтр по ID аниме — только авторы этого аниме
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Максимальное количество результатов
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Список авторов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["Ancord", "AniDub", "AniLibria", "Shiza Project"]
+
+  /shikivideos/{anime_id}:
+    get:
+      summary: Найти видео по ID аниме
+      description: Возвращает все видео для указанного anime_id
+      tags: [Videos]
+      parameters:
+        - name: anime_id
+          in: path
+          required: true
+          description: ID аниме с Shikimori
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/EpisodeQuery'
+        - $ref: '#/components/parameters/KindQuery'
+        - $ref: '#/components/parameters/LanguageQuery'
+        - $ref: '#/components/parameters/QualityQuery'
+        - $ref: '#/components/parameters/AuthorQuery'
+        - $ref: '#/components/parameters/UploaderQuery'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Найденные видео
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /shikivideos/{anime_id}/length:
+    get:
+      summary: Максимальный номер эпизода
+      description: Возвращает номер последнего эпизода аниме в архиве
+      tags: [Videos]
+      parameters:
+        - name: anime_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Максимальный эпизод
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  length:
+                    type: integer
+                    example: 12
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /status:
+    get:
+      summary: Статус сервера и API
+      tags: [Status]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  server:
+                    type: string
+                    enum: [online, offline]
+                    example: online
+                  api:
+                    type: string
+                    enum: [online, offline]
+                    example: online
+
+  /status/uptime:
+    get:
+      summary: Аптайм сервера и API
+      tags: [Status]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  server:
+                    type: string
+                    example: 1 month, 20 days
+                  api:
+                    type: string
+                    example: 2 days, 14 hours
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    EpisodeQuery:
+      name: episode
+      in: query
+      description: Номер эпизода
+      schema:
+        type: integer
+        minimum: 1
+
+    KindQuery:
+      name: kind
+      in: query
+      schema:
+        $ref: '#/components/schemas/Kind'
+
+    LanguageQuery:
+      name: lang
+      in: query
+      description: Язык озвучки/субтитров
+      schema:
+        type: string
+
+    QualityQuery:
+      name: quality
+      in: query
+      schema:
+        $ref: '#/components/schemas/Quality'
+
+    AuthorQuery:
+      name: author
+      in: query
+      description: Автор озвучки/субтитров
+      schema:
+        type: string
+
+    UploaderQuery:
+      name: uploader
+      in: query
+      description: ID загрузившего пользователя
+      schema:
+        type: string
+
+    Offset:
+      name: offset
+      in: query
+      description: Смещение для пагинации
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    Limit:
+      name: limit
+      in: query
+      description: Максимальное количество результатов
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+
   schemas:
     Kind:
       description: Тип озвучки
       type: string
-      enum: 
+      enum:
         - озвучка
         - субтитры
         - оригинал
@@ -91,7 +334,7 @@ components:
     Quality:
       description: Качество видео
       type: string
-      enum: 
+      enum:
         - bd
         - dvd
         - tv
@@ -103,48 +346,62 @@ components:
       type: object
       properties:
         id:
-          description: ID
           type: integer
           example: 882657
         url:
-          description: Ссылка для встраивания в плеер
           type: string
           example: http://video.sibnet.ru/shell.php?videoid=1503010
+          maxLength: 2048
         anime_id:
-          description: ID аниме на Шикимори
           type: integer
           example: 6
         episode:
-          description: Номер эпизода
           type: integer
           example: 7
         kind:
           $ref: '#/components/schemas/Kind'
         language:
-          description: Язык
           type: string
-          example: russian
+          example: ru
         quality:
           $ref: '#/components/schemas/Quality'
         author:
-          description: Автор
           type: string
           example: 2x2 (Мега-Аниме)
         watches_count:
-          description: Количество просмотров
           type: integer
+          example: 0
         uploader:
-          description: ID загрузившего пользователя Шикимори
           type: string
-          example: 278015
+          example: '278015'
         anime_english:
           deprecated: true
-          description: Название на английском
           type: string
           example: Trigun
         anime_russian:
           deprecated: true
-          description: Название на русском
           type: string
           example: Триган
-        
+
+  responses:
+    BadRequest:
+      description: Неверные параметры запроса
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Invalid required parameters
+
+    Unauthorized:
+      description: Требуется авторизация
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Unauthorized
