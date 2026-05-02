@@ -1,7 +1,11 @@
-import { Controller, Get, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Logger, Param, Query } from '@nestjs/common';
 
 import { VideosService } from './videos.service';
-import { GetByAnimeIdDto, ResponseAnimeLengthDto } from './dto';
+import {
+  GetByAnimeIdDto,
+  ResponseAnimeLengthDto,
+  AuthorsQueryDto,
+} from './dto';
 
 @Controller('shikivideos')
 export class VideosController {
@@ -9,6 +13,13 @@ export class VideosController {
     private readonly _logger: Logger,
     private readonly _videos: VideosService,
   ) {}
+
+  @Get('authors')
+  async getAuthors(
+    @Query() query: AuthorsQueryDto,
+  ): Promise<ResponseAnimeLengthDto> {
+    return await this._videos.getAuthors(query);
+  }
 
   @Get(':animeId/length')
   async getAnimeLength(
