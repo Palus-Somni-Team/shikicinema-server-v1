@@ -5,11 +5,7 @@ import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { KindEnum } from './kind.enum';
 import { QualityEnum } from './quality.enum';
 
-export class SearchQueryDto extends PaginationQueryDto {
-  @IsOptional()
-  @IsString()
-  title?: string;
-
+export class VideosQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsInt()
   @Min(1)

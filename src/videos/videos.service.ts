@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
 import { VideosServiceInterface } from './videos-service.interface';
-import { AuthorsQueryDto, SearchQueryDto, VideoDto } from './dto';
+import {
+  AuthorsQueryDto,
+  VideosQueryDto,
+  VideoDto,
+  VideosSearchQueryDto,
+} from './dto';
 
 @Injectable()
 export class VideosService implements VideosServiceInterface {
@@ -13,7 +18,14 @@ export class VideosService implements VideosServiceInterface {
     return Promise.resolve(['Author1', 'Author2', 'Author3']);
   }
 
-  async search(query: SearchQueryDto): Promise<VideoDto[]> {
+  async search(query: VideosSearchQueryDto): Promise<VideoDto[]> {
+    return Promise.resolve([]);
+  }
+
+  async getByAnimeId(
+    animeId: number,
+    query: VideosQueryDto,
+  ): Promise<VideoDto[]> {
     return Promise.resolve([]);
   }
 }

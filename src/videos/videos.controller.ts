@@ -5,8 +5,9 @@ import {
   GetByAnimeIdDto,
   ResponseAnimeLengthDto,
   AuthorsQueryDto,
-  SearchQueryDto,
+  VideosQueryDto,
   VideoDto,
+  VideosSearchQueryDto,
 } from './dto';
 
 @Controller('shikivideos')
@@ -33,7 +34,15 @@ export class VideosController {
   }
 
   @Get('search')
-  async search(@Query() query: SearchQueryDto): Promise<VideoDto[]> {
+  async search(@Query() query: VideosSearchQueryDto): Promise<VideoDto[]> {
     return await this._videos.search(query);
+  }
+
+  @Get(':animeId')
+  async getByAnimeId(
+    @Param() params: GetByAnimeIdDto,
+    @Query() query: VideosQueryDto,
+  ): Promise<VideoDto[]> {
+    return await this._videos.getByAnimeId(params.animeId, query);
   }
 }
