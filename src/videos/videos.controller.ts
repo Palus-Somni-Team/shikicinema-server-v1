@@ -5,6 +5,8 @@ import {
   GetByAnimeIdDto,
   ResponseAnimeLengthDto,
   AuthorsQueryDto,
+  SearchQueryDto,
+  VideoDto,
 } from './dto';
 
 @Controller('shikivideos')
@@ -28,5 +30,10 @@ export class VideosController {
     const length = await this._videos.getAnimeLength(params.animeId);
 
     return { length };
+  }
+
+  @Get('search')
+  async search(@Query() query: SearchQueryDto): Promise<VideoDto[]> {
+    return await this._videos.search(query);
   }
 }
