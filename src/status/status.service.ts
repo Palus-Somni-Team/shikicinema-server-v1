@@ -1,23 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { intervalToDuration, formatDuration } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import * as os from 'os';
 
-import { StatusServiceInterface } from './status-service.interface';
-import { ResponseStatusDto } from './dto/response-status.dto';
 import { StatusEnum } from './types';
-import { ResponseStatusUptimeDto } from './dto';
 
 @Injectable()
-export class StatusService implements StatusServiceInterface {
-    getStatus(): Promise<ResponseStatusDto> {
+export class StatusService {
+    getStatus() {
         return Promise.resolve({
-            server: StatusEnum.ONLINE,
-            api: StatusEnum.ONLINE,
+            server: StatusEnum.ONLINE as const,
+            api: StatusEnum.ONLINE as const,
         });
     }
 
-    getUptime(): Promise<ResponseStatusUptimeDto> {
+    getUptime() {
+        const serverUptime = intervalToDuration({ start: 0, end: os.uptime() * 1000 });
+        const apiUptime = intervalToDuration({ start: 0, end: process.uptime() * 1000 });
+
         return Promise.resolve({
-            server: '0 hours, 5 minute',
-            api: '0 hours, 1 minute',
+            server: formatDuration(serverUptime, { locale: ru }),
+            api: formatDuration(apiUptime, { locale: ru }),
         });
     }
 }
