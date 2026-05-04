@@ -7,9 +7,9 @@ import { StatusEnum } from '../types';
 export class ResponseStatusDto {
   @Expose()
   @IsEnum(StatusEnum)
-  server: StatusEnum;
+      server: StatusEnum;
 
   @Expose()
   @IsEnum(StatusEnum)
-  api: StatusEnum;
+      api: StatusEnum;
 }

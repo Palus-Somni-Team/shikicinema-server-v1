@@ -8,5 +8,5 @@ export class GetByAnimeIdDto {
   @IsInt()
   @IsPositive()
   @Type(() => Number)
-  animeId: number;
+      animeId: number;
 }

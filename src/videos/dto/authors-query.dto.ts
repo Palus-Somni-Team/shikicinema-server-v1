@@ -1,9 +1,9 @@
 import {
-  IsOptional,
-  IsInt,
-  IsString,
-  MinLength,
-  IsPositive,
+    IsOptional,
+    IsInt,
+    IsString,
+    MinLength,
+    IsPositive,
 } from 'class-validator';
 import { Expose, Type } from 'class-transformer';
 
@@ -13,12 +13,12 @@ export class AuthorsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  name?: string;
+      name?: string;
 
   @Expose({ name: 'anime_id' })
   @IsOptional()
   @IsInt()
   @IsPositive()
   @Type(() => Number)
-  animeId?: number;
+      animeId?: number;
 }

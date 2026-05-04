@@ -8,21 +8,21 @@ export let app: INestApplication;
 export let moduleFixture: TestingModule;
 
 export async function createTestApp(): Promise<INestApplication<Server>> {
-  moduleFixture = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile();
+    moduleFixture = await Test.createTestingModule({
+        imports: [AppModule],
+    }).compile();
 
-  app = moduleFixture.createNestApplication();
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  await app.init();
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    await app.init();
 
-  return app;
+    return app;
 }
 
 export async function getHttpServer(): Promise<Server> {
-  return (await createTestApp()).getHttpServer();
+    return (await createTestApp()).getHttpServer();
 }
 
 export async function closeTestApp(): Promise<void> {
-  await app.close();
+    await app.close();
 }

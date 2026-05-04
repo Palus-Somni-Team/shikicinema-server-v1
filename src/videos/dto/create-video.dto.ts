@@ -1,10 +1,10 @@
 import {
-  IsString,
-  IsInt,
-  IsPositive,
-  IsOptional,
-  MaxLength,
-  IsEnum,
+    IsString,
+    IsInt,
+    IsPositive,
+    IsOptional,
+    MaxLength,
+    IsEnum,
 } from 'class-validator';
 import { Expose, Type } from 'class-transformer';
 
@@ -14,41 +14,41 @@ import { QualityEnum } from './quality.enum';
 export class CreateVideoDto {
   @IsString()
   @MaxLength(2048)
-  url: string;
+      url: string;
 
   @Expose({ name: 'anime_id' })
   @IsInt()
   @IsPositive()
   @Type(() => Number)
-  animeId: number;
+      animeId: number;
 
   @IsInt()
   @IsPositive()
   @Type(() => Number)
-  episode: number;
+      episode: number;
 
   @IsEnum(KindEnum)
-  kind: KindEnum;
+      kind: KindEnum;
 
   @IsString()
-  language: string;
+      language: string;
 
   @IsString()
   @IsOptional()
   @MaxLength(256)
-  author?: string;
+      author?: string;
 
   @IsOptional()
   @IsEnum(QualityEnum)
-  quality?: QualityEnum;
+      quality?: QualityEnum;
 
   @Expose({ name: 'anime_english' })
   @IsString()
   @IsOptional()
-  animeEnglish?: string;
+      animeEnglish?: string;
 
   @Expose({ name: 'anime_russian' })
   @IsString()
   @IsOptional()
-  animeRussian?: string;
+      animeRussian?: string;
 }

@@ -10,27 +10,27 @@ export class VideosQueryDto extends PaginationQueryDto {
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  episode?: number;
+      episode?: number;
 
   @IsOptional()
   @IsString()
   @IsEnum(KindEnum)
-  kind?: KindEnum;
+      kind?: KindEnum;
 
   @IsOptional()
   @IsString()
-  lang?: string;
+      lang?: string;
 
   @IsOptional()
   @IsString()
   @IsEnum(QualityEnum)
-  quality?: QualityEnum;
+      quality?: QualityEnum;
 
   @IsOptional()
   @IsString()
-  author?: string;
+      author?: string;
 
   @IsOptional()
   @IsString()
-  uploader?: string;
+      uploader?: string;
 }

@@ -7,17 +7,17 @@ import { ResponseStatusUptimeDto } from './dto';
 
 @Injectable()
 export class StatusService implements StatusServiceInterface {
-  getStatus(): Promise<ResponseStatusDto> {
-    return Promise.resolve({
-      server: StatusEnum.ONLINE,
-      api: StatusEnum.ONLINE,
-    });
-  }
+    getStatus(): Promise<ResponseStatusDto> {
+        return Promise.resolve({
+            server: StatusEnum.ONLINE,
+            api: StatusEnum.ONLINE,
+        });
+    }
 
-  getUptime(): Promise<ResponseStatusUptimeDto> {
-    return Promise.resolve({
-      server: '0 hours, 5 minute',
-      api: '0 hours, 1 minute',
-    });
-  }
+    getUptime(): Promise<ResponseStatusUptimeDto> {
+        return Promise.resolve({
+            server: '0 hours, 5 minute',
+            api: '0 hours, 1 minute',
+        });
+    }
 }

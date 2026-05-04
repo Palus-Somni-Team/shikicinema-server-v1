@@ -1,9 +1,9 @@
 import { VideoEntity } from '../entities';
 import {
-  AuthorsQueryDto,
-  VideosQueryDto,
-  VideosSearchQueryDto,
-  CreateVideoDto,
+    AuthorsQueryDto,
+    VideosQueryDto,
+    VideosSearchQueryDto,
+    CreateVideoDto,
 } from './dto';
 
 export interface VideosServiceInterface {

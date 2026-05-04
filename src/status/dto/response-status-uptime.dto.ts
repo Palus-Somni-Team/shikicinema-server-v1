@@ -5,9 +5,9 @@ import { IsString } from 'class-validator';
 export class ResponseStatusUptimeDto {
   @Expose()
   @IsString()
-  server: string;
+      server: string;
 
   @Expose()
   @IsString()
-  api: string;
+      api: string;
 }

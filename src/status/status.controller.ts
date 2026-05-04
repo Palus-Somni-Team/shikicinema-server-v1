@@ -5,18 +5,18 @@ import { ResponseStatusDto, ResponseStatusUptimeDto } from './dto';
 
 @Controller('status')
 export class StatusController {
-  constructor(
+    constructor(
     private readonly _logger: Logger,
     private readonly _status: StatusService,
-  ) {}
+    ) {}
 
   @Get()
-  async getStatus(): Promise<ResponseStatusDto> {
-    return await this._status.getStatus();
-  }
+    async getStatus(): Promise<ResponseStatusDto> {
+        return await this._status.getStatus();
+    }
 
   @Get('/uptime')
   async getUptime(): Promise<ResponseStatusUptimeDto> {
-    return await this._status.getUptime();
+      return await this._status.getUptime();
   }
 }

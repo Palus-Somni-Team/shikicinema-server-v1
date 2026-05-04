@@ -1,10 +1,10 @@
 import {
-  IsInt,
-  IsString,
-  IsOptional,
-  IsUrl,
-  IsPositive,
-  IsEnum,
+    IsInt,
+    IsString,
+    IsOptional,
+    IsUrl,
+    IsPositive,
+    IsEnum,
 } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
 
@@ -15,57 +15,57 @@ import { QualityEnum } from './quality.enum';
 export class ResponseVideoDto {
   @Expose()
   @IsInt()
-  id: number;
+      id: number;
 
   @Expose()
   @IsString()
   @IsUrl()
-  url: string;
+      url: string;
 
   @Expose({ name: 'anime_id' })
   @IsInt()
-  animeId: number;
+      animeId: number;
 
   @Expose()
   @IsInt()
   @IsPositive()
-  episode: number;
+      episode: number;
 
   @Expose()
   @IsString()
   @IsEnum(KindEnum)
-  kind: KindEnum;
+      kind: KindEnum;
 
   @Expose()
   @IsString()
-  language: string;
+      language: string;
 
   @Expose()
   @IsString()
   @IsOptional()
   @IsEnum(QualityEnum)
-  quality?: QualityEnum;
+      quality?: QualityEnum;
 
   @Expose()
   @IsString()
   @IsOptional()
-  author?: string | null;
+      author?: string | null;
 
   @Expose({ name: 'watches_count' })
   @IsInt()
-  watchesCount: number;
+      watchesCount: number;
 
   @Expose()
   @IsString()
-  uploader: string | null;
+      uploader: string | null;
 
   @Expose({ name: 'anime_english' })
   @IsString()
   @IsOptional()
-  animeEnglish?: string;
+      animeEnglish?: string;
 
   @Expose({ name: 'anime_russian' })
   @IsString()
   @IsOptional()
-  animeRussian?: string;
+      animeRussian?: string;
 }

@@ -7,5 +7,5 @@ export class ResponseAnimeLengthDto {
   @IsInt()
   @Min(0)
   @Type(() => Number)
-  length: number;
+      length: number;
 }

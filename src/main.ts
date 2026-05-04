@@ -4,11 +4,11 @@ import { AppModule } from './app.module';
 import { addGlobal } from './add-global';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule);
 
-  addGlobal(app);
+    addGlobal(app);
 
-  await app.listen(process.env.SHIKICINEMA_API_V1_PORT ?? 8603);
+    await app.listen(process.env.SHIKICINEMA_API_V1_PORT ?? 8603);
 }
 
 void bootstrap();
