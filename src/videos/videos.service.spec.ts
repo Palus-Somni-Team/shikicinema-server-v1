@@ -328,7 +328,7 @@ describe('VideosService', () => {
                 language: 'ru',
                 animeEnglish: 'Trigun',
                 animeRussian: 'Триган',
-            });
+            }, '278015');
 
             expect(videoRepo.save).toHaveBeenCalledWith({
                 url: 'https://example.com/video',
@@ -338,7 +338,7 @@ describe('VideosService', () => {
                 language: 'ru',
                 quality: QualityEnum.UNKNOWN,
                 author: null,
-                uploader: null,
+                uploader: '278015',
                 watchesCount: 0,
                 animeEnglish: 'Trigun',
                 animeRussian: 'Триган',
@@ -356,12 +356,13 @@ describe('VideosService', () => {
                 language: 'ru',
                 author: 'Ancord',
                 quality: QualityEnum.BD,
-            });
+            }, '278015');
 
             expect(videoRepo.save).toHaveBeenCalledWith(
                 expect.objectContaining({
                     author: 'Ancord',
                     quality: QualityEnum.BD,
+                    uploader: '278015',
                 }),
             );
         });
@@ -383,7 +384,7 @@ describe('VideosService', () => {
                     episode: 1,
                     kind: KindEnum.DUBBING,
                     language: 'ru',
-                }),
+                }, '278015'),
             ).rejects.toThrow(DuplicateUrlException);
         });
     });

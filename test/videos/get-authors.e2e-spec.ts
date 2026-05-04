@@ -6,7 +6,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { VideosService, VideosModule } from '../../src/videos';
 import { addGlobal } from '../../src/add-global';
-import { VideoEntity } from '../../src/entities';
+import { AccessTokenEntity, UserEntity, VideoEntity } from '../../src/entities';
 
 describe('GET /shikivideos/authors', () => {
     let app: INestApplication;
@@ -17,6 +17,10 @@ describe('GET /shikivideos/authors', () => {
         const moduleFixture = await Test.createTestingModule({
             imports: [VideosModule],
         })
+            .overrideProvider(getRepositoryToken(AccessTokenEntity))
+            .useValue({ findOne: jest.fn() })
+            .overrideProvider(getRepositoryToken(UserEntity))
+            .useValue({ findOne: jest.fn() })
             .overrideProvider(getRepositoryToken(VideoEntity))
             .useValue({})
             .overrideProvider(VideosService)

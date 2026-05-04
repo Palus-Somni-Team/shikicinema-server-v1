@@ -7,13 +7,13 @@ import {
 } from './dto';
 
 export interface VideosServiceInterface {
-  getAnimeLength(animeId: number): Promise<number>;
+    getAnimeLength(animeId: number): Promise<number>;
 
-  getAuthors(query: AuthorsQueryDto): Promise<string[]>;
+    getAuthors(query: AuthorsQueryDto): Promise<string[]>;
 
-  search(query: VideosSearchQueryDto): Promise<VideoEntity[]>;
+    search(query: VideosSearchQueryDto): Promise<VideoEntity[]>;
 
-  getByAnimeId(animeId: number, query: VideosQueryDto): Promise<VideoEntity[]>;
+    getByAnimeId(animeId: number, query: VideosQueryDto): Promise<VideoEntity[]>;
 
-  createVideo(video: CreateVideoDto): Promise<VideoEntity>;
+    createVideo(video: CreateVideoDto, uploader: string): Promise<VideoEntity>;
 }

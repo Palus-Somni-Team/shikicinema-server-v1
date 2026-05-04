@@ -119,7 +119,7 @@ export class VideosService implements VideosServiceInterface {
         });
     }
 
-    async createVideo(video: CreateVideoDto): Promise<VideoEntity> {
+    async createVideo(video: CreateVideoDto, uploader: string): Promise<VideoEntity> {
         try {
             const entity = new VideoEntity(
                 video.animeId,
@@ -127,7 +127,7 @@ export class VideosService implements VideosServiceInterface {
                 video.url,
                 video.kind,
                 video.language,
-                null, // TODO: add uploader
+                uploader,
                 video.author,
                 video.quality ?? QualityEnum.UNKNOWN,
                 0,

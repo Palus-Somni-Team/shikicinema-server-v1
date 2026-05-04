@@ -1,13 +1,14 @@
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { Server } from 'http';
-import { HttpException, INestApplication } from '@nestjs/common';
+import { HttpException, INestApplication, UnauthorizedException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { VideosService, VideosModule } from '../../src/videos';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { addGlobal } from '../../src/add-global';
-import { VideoEntity } from '../../src/entities';
+import { UploadTokenGuard } from '../../src/common/guards/upload-token.guard';
+import { AccessTokenEntity, UserEntity, VideoEntity } from '../../src/entities';
 
 describe('POST /shikivideos', () => {
     const animeId = 123;
@@ -19,6 +20,7 @@ describe('POST /shikivideos', () => {
     const author = 'AniDub';
     const animeEnglish = 'Test Anime';
     const animeRussian = 'Тестовое Аниме';
+    const uploaderId = '12345';
 
     let app: INestApplication;
     let http: Server;
@@ -28,8 +30,25 @@ describe('POST /shikivideos', () => {
         const moduleFixture = await Test.createTestingModule({
             imports: [VideosModule],
         })
+            .overrideProvider(getRepositoryToken(AccessTokenEntity))
+            .useValue({ findOne: jest.fn() })
+            .overrideProvider(getRepositoryToken(UserEntity))
+            .useValue({ findOne: jest.fn() })
             .overrideProvider(getRepositoryToken(VideoEntity))
-            .useValue({})
+            .useValue({ findOne: jest.fn() })
+            .overrideGuard(UploadTokenGuard)
+            .useValue({
+                canActivate: (context: any) => {
+                    const req = context.switchToHttp().getRequest();
+
+                    if (!req.headers.authorization) {
+                        throw new UnauthorizedException();
+                    }
+
+                    req.uploader = uploaderId;
+                    return true;
+                }
+            })
             .overrideProvider(VideosService)
             .useValue({
                 createVideo: jest.fn().mockResolvedValue({
@@ -42,7 +61,7 @@ describe('POST /shikivideos', () => {
                     quality,
                     author,
                     watches_count: 0,
-                    uploader: '12345',
+                    uploader: uploaderId,
                     anime_english: animeEnglish,
                     anime_russian: animeRussian,
                 }),
@@ -63,13 +82,16 @@ describe('POST /shikivideos', () => {
     it('returns 201 when creating a video', async () => {
         const spy = jest.spyOn(service, 'createVideo');
 
-        const { statusCode } = await request(http).post('/shikivideos').query({
-            anime_id: animeId,
-            url,
-            episode,
-            kind,
-            language,
-        });
+        const { statusCode } = await request(http)
+            .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
+            .query({
+                anime_id: animeId,
+                url,
+                episode,
+                kind,
+                language,
+            });
 
         expect(statusCode).toBe(201);
         expect(spy).toHaveBeenCalledWith(
@@ -80,6 +102,7 @@ describe('POST /shikivideos', () => {
                 kind,
                 language,
             }),
+            uploaderId,
         );
     });
 
@@ -91,6 +114,7 @@ describe('POST /shikivideos', () => {
 
         const { statusCode, body } = await request(http)
             .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
             .query({
                 anime_id: animeId,
                 url,
@@ -110,7 +134,10 @@ describe('POST /shikivideos', () => {
     it('Returns 400 when required fields are missing', async () => {
         const spy = jest.spyOn(service, 'createVideo');
 
-        const { statusCode } = await request(http).post('/shikivideos').query({});
+        const { statusCode } = await request(http)
+            .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
+            .query({});
 
         expect(statusCode).toBe(400);
         expect(spy).not.toHaveBeenCalled();
@@ -129,6 +156,7 @@ describe('POST /shikivideos', () => {
 
         const { statusCode } = await request(http)
             .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
             .query(createVideoDto);
 
         expect(statusCode).toBe(400);
@@ -148,6 +176,7 @@ describe('POST /shikivideos', () => {
 
         const { statusCode } = await request(http)
             .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
             .query(createVideoDto);
 
         expect(statusCode).toBe(400);
@@ -167,6 +196,7 @@ describe('POST /shikivideos', () => {
 
         const { statusCode } = await request(http)
             .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
             .query(createVideoDto);
 
         expect(statusCode).toBe(400);
@@ -186,6 +216,7 @@ describe('POST /shikivideos', () => {
 
         const { statusCode } = await request(http)
             .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
             .query(createVideoDto);
 
         expect(statusCode).toBe(400);
@@ -205,6 +236,7 @@ describe('POST /shikivideos', () => {
 
         const { statusCode } = await request(http)
             .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
             .query(createVideoDto);
 
         expect(statusCode).toBe(400);
@@ -214,17 +246,20 @@ describe('POST /shikivideos', () => {
     it('Optional fields are passed to service', async () => {
         const spy = jest.spyOn(service, 'createVideo');
 
-        const { statusCode } = await request(http).post('/shikivideos').query({
-            anime_id: animeId,
-            url,
-            episode,
-            kind,
-            language,
-            author,
-            quality,
-            anime_english: animeEnglish,
-            anime_russian: animeRussian,
-        });
+        const { statusCode } = await request(http)
+            .post('/shikivideos')
+            .set('Authorization', 'Bearer test-token')
+            .query({
+                anime_id: animeId,
+                url,
+                episode,
+                kind,
+                language,
+                author,
+                quality,
+                anime_english: animeEnglish,
+                anime_russian: animeRussian,
+            });
 
         expect(statusCode).toBe(201);
         expect(spy).toHaveBeenCalledWith({
@@ -237,6 +272,17 @@ describe('POST /shikivideos', () => {
             quality,
             animeEnglish,
             animeRussian,
-        });
+        }, uploaderId);
+    });
+
+    it('returns 401 when no token provided', async () => {
+        const spy = jest.spyOn(service, 'createVideo');
+
+        const { statusCode } = await request(http)
+            .post('/shikivideos')
+            .query({ url, anime_id: animeId, episode, kind, language });
+
+        expect(statusCode).toBe(401);
+        expect(spy).not.toHaveBeenCalled();
     });
 });
