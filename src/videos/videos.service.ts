@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { VideosServiceInterface } from './videos-service.interface';
 import {
@@ -7,13 +9,25 @@ import {
   ResponseVideoDto,
   VideosSearchQueryDto,
   CreateVideoDto,
+  QualityEnum,
 } from './dto';
-import { plainToInstance } from 'class-transformer';
+import { VideoEntity } from '../entities';
 
 @Injectable()
 export class VideosService implements VideosServiceInterface {
+  constructor(
+    @InjectRepository(VideoEntity)
+    private readonly videoRepo: Repository<VideoEntity>,
+  ) {}
+
   async getAnimeLength(animeId: number): Promise<number> {
-    return Promise.resolve(animeId);
+    const result = await this.videoRepo
+      .createQueryBuilder('video')
+      .select('MAX(video.episode)', 'max')
+      .where('video.anime_id = :animeId', { animeId })
+      .getRawOne<{ max: string | null }>();
+
+    return parseInt(result?.max ?? '0', 10);
   }
 
   async getAuthors(query: AuthorsQueryDto): Promise<string[]> {
@@ -35,16 +49,16 @@ export class VideosService implements VideosServiceInterface {
     return Promise.resolve({
       id: 1,
       url: video.url,
-      anime_id: video.animeId,
+      animeId: video.animeId,
       episode: video.episode,
       kind: video.kind,
       language: video.language,
-      quality: video.quality ?? null,
+      quality: video.quality ?? QualityEnum.UNKNOWN,
       author: video.author ?? null,
-      watches_count: 0,
+      watchesCount: 0,
       uploader: '12345',
-      anime_english: video?.animeEnglish ?? null,
-      anime_russian: video?.animeRussian ?? null,
+      animeEnglish: video?.animeEnglish ?? '',
+      animeRussian: video?.animeRussian ?? '',
     });
   }
 }

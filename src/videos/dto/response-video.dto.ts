@@ -49,7 +49,7 @@ export class ResponseVideoDto {
   @Expose()
   @IsString()
   @IsOptional()
-  author?: string;
+  author?: string | null;
 
   @Expose({ name: 'watches_count' })
   @IsInt()
@@ -57,7 +57,7 @@ export class ResponseVideoDto {
 
   @Expose()
   @IsString()
-  uploader: string;
+  uploader: string | null;
 
   @Expose({ name: 'anime_english' })
   @IsString()
