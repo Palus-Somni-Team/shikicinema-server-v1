@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { mock } from 'jest-mock-extended';
 
 import { VideosService } from './videos.service';
@@ -119,6 +119,135 @@ describe('VideosService', () => {
   });
 
   describe('getByAnimeId', () => {
+    it('filters by anime_id only when no params', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, {});
+
+      expect(videoRepo.find).toHaveBeenCalledWith({
+        where: { anime_id: 6 },
+        order: { episode: 'ASC' },
+        skip: 0,
+        take: 50,
+      });
+    });
+
+    it('adds episode filter', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, { episode: 5, offset: 0, limit: 50 });
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ anime_id: 6, episode: 5 }),
+        }),
+      );
+    });
+
+    it('adds kind filter', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, {
+        kind: KindEnum.DUBBING,
+        offset: 0,
+        limit: 50,
+      });
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ kind: KindEnum.DUBBING }),
+        }),
+      );
+    });
+
+    it('adds lang filter', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, { lang: 'ru', offset: 0, limit: 50 });
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ language: 'ru' }),
+        }),
+      );
+    });
+
+    it('adds quality filter', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, {
+        quality: QualityEnum.BD,
+        offset: 0,
+        limit: 50,
+      });
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ quality: QualityEnum.BD }),
+        }),
+      );
+    });
+
+    it('adds author with ILike', async () => {
+      const author = 'Ancord';
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, { author, offset: 0, limit: 50 });
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            anime_id: 6,
+            author: ILike(`%${author}%`),
+          },
+        }),
+      );
+    });
+
+    it('adds uploader filter', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, {
+        uploader: '12345',
+        offset: 0,
+        limit: 50,
+      });
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ uploader: '12345' }),
+        }),
+      );
+    });
+
+    it('applies offset and limit', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, { offset: 10, limit: 25 });
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 10,
+          take: 25,
+        }),
+      );
+    });
+
+    it('uses defaults when offset and limit not provided', async () => {
+      videoRepo.find.mockResolvedValue([]);
+
+      await service.getByAnimeId(6, {});
+
+      expect(videoRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 0,
+          take: 50,
+        }),
+      );
+    });
+  });
+
+  describe('search', () => {
     const mockQb = () => ({
       where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
@@ -128,101 +257,61 @@ describe('VideosService', () => {
       getMany: jest.fn().mockResolvedValue([]),
     });
 
-    it('filters by anime_id', async () => {
+    it('searches by title in english and russian', async () => {
       const qb = mockQb();
       videoRepo.createQueryBuilder.mockReturnValue(qb as any);
 
-      await service.getByAnimeId(6, {});
+      const title = 'Trigun';
 
-      expect(qb.where).toHaveBeenCalledWith('video.anime_id = :animeId', {
-        animeId: 6,
-      });
+      await service.search({ title, offset: 0, limit: 50 });
+
+      expect(qb.where).toHaveBeenCalledWith(
+        '(video.anime_english ILIKE :title OR video.anime_russian ILIKE :title)',
+        { title: `%${title}%` },
+      );
     });
 
-    it('adds episode filter when provided', async () => {
+    it('applies filters same as getByAnimeId', async () => {
       const qb = mockQb();
       videoRepo.createQueryBuilder.mockReturnValue(qb as any);
 
-      await service.getByAnimeId(6, { episode: 5 });
+      await service.search({
+        episode: 5,
+        kind: KindEnum.DUBBING,
+        lang: 'ru',
+        quality: QualityEnum.BD,
+        author: 'Ancord',
+        uploader: '12345',
+        offset: 10,
+        limit: 25,
+      });
 
       expect(qb.andWhere).toHaveBeenCalledWith('video.episode = :episode', {
         episode: 5,
       });
-    });
-
-    it('adds kind filter when provided', async () => {
-      const qb = mockQb();
-      videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-      await service.getByAnimeId(6, { kind: KindEnum.DUBBING });
 
       expect(qb.andWhere).toHaveBeenCalledWith('video.kind = :kind', {
         kind: KindEnum.DUBBING,
       });
-    });
-
-    it('adds lang filter when provided', async () => {
-      const qb = mockQb();
-      videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-      await service.getByAnimeId(6, { lang: 'ru' });
 
       expect(qb.andWhere).toHaveBeenCalledWith('video.language = :lang', {
         lang: 'ru',
       });
-    });
-
-    it('adds quality filter when provided', async () => {
-      const qb = mockQb();
-      videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-      await service.getByAnimeId(6, { quality: QualityEnum.BD });
 
       expect(qb.andWhere).toHaveBeenCalledWith('video.quality = :quality', {
         quality: QualityEnum.BD,
       });
-    });
-
-    it('adds author ILIKE when provided', async () => {
-      const qb = mockQb();
-      videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-      await service.getByAnimeId(6, { author: 'Ancord' });
 
       expect(qb.andWhere).toHaveBeenCalledWith('video.author ILIKE :author', {
         author: '%Ancord%',
       });
-    });
-
-    it('adds uploader filter when provided', async () => {
-      const qb = mockQb();
-      videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-      await service.getByAnimeId(6, { uploader: '12345' });
 
       expect(qb.andWhere).toHaveBeenCalledWith('video.uploader = :uploader', {
         uploader: '12345',
       });
-    });
-
-    it('applies offset and limit', async () => {
-      const qb = mockQb();
-      videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-      await service.getByAnimeId(6, { offset: 10, limit: 25 });
 
       expect(qb.skip).toHaveBeenCalledWith(10);
       expect(qb.take).toHaveBeenCalledWith(25);
-    });
-
-    it('uses default offset and limit when not provided', async () => {
-      const qb = mockQb();
-      videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-      await service.getByAnimeId(6, {});
-
-      expect(qb.skip).toHaveBeenCalledWith(0);
-      expect(qb.take).toHaveBeenCalledWith(50);
     });
   });
 });

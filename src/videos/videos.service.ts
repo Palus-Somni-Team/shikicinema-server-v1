@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 
 import { VideosServiceInterface } from './videos-service.interface';
 import {
@@ -51,8 +51,41 @@ export class VideosService implements VideosServiceInterface {
     return rows.map((r) => r.author);
   }
 
-  async search(query: VideosSearchQueryDto): Promise<ResponseVideoDto[]> {
-    return Promise.resolve([]);
+  async search(query: VideosSearchQueryDto): Promise<VideoEntity[]> {
+    const {
+      title,
+      episode,
+      kind,
+      lang,
+      quality,
+      author,
+      uploader,
+      offset = 0,
+      limit = 50,
+    } = query;
+
+    const qb = this.videoRepo.createQueryBuilder('video');
+
+    if (title) {
+      qb.where(
+        '(video.anime_english ILIKE :title OR video.anime_russian ILIKE :title)',
+        { title: `%${title}%` },
+      );
+    }
+
+    if (episode) qb.andWhere('video.episode = :episode', { episode });
+    if (kind) qb.andWhere('video.kind = :kind', { kind });
+    if (lang) qb.andWhere('video.language = :lang', { lang });
+    if (quality) qb.andWhere('video.quality = :quality', { quality });
+    if (author)
+      qb.andWhere('video.author ILIKE :author', { author: `%${author}%` });
+    if (uploader) qb.andWhere('video.uploader = :uploader', { uploader });
+
+    return qb
+      .orderBy('video.episode', 'ASC')
+      .skip(offset)
+      .take(limit)
+      .getMany();
   }
 
   async getByAnimeId(
@@ -70,25 +103,19 @@ export class VideosService implements VideosServiceInterface {
       limit = 50,
     } = query;
 
-    const qb = this.videoRepo
-      .createQueryBuilder('video')
-      .where('video.anime_id = :animeId', { animeId });
+    const where = { anime_id: animeId };
+    if (episode) where.episode = episode;
+    if (kind) where.kind = kind;
+    if (lang) where.language = lang;
+    if (quality) where.quality = quality;
+    if (uploader) where.uploader = uploader;
 
-    if (episode) qb.andWhere('video.episode = :episode', { episode });
-    if (kind) qb.andWhere('video.kind = :kind', { kind });
-    if (lang) qb.andWhere('video.language = :lang', { lang });
-    if (quality) qb.andWhere('video.quality = :quality', { quality });
-    if (author)
-      qb.andWhere('video.author ILIKE :author', { author: `%${author}%` });
-    if (uploader) qb.andWhere('video.uploader = :uploader', { uploader });
-
-    const videos = await qb
-      .orderBy('video.episode', 'ASC')
-      .skip(offset)
-      .take(limit)
-      .getMany();
-
-    return videos;
+    return this.videoRepo.find({
+      where: author ? { ...where, author: ILike(`%${author}%`) } : where,
+      order: { episode: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
   }
 
   async createVideo(video: CreateVideoDto): Promise<ResponseVideoDto> {
