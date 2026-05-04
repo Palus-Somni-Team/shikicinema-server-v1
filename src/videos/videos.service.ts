@@ -58,8 +58,37 @@ export class VideosService implements VideosServiceInterface {
   async getByAnimeId(
     animeId: number,
     query: VideosQueryDto,
-  ): Promise<ResponseVideoDto[]> {
-    return Promise.resolve([]);
+  ): Promise<VideoEntity[]> {
+    const {
+      episode,
+      kind,
+      lang,
+      quality,
+      author,
+      uploader,
+      offset = 0,
+      limit = 50,
+    } = query;
+
+    const qb = this.videoRepo
+      .createQueryBuilder('video')
+      .where('video.anime_id = :animeId', { animeId });
+
+    if (episode) qb.andWhere('video.episode = :episode', { episode });
+    if (kind) qb.andWhere('video.kind = :kind', { kind });
+    if (lang) qb.andWhere('video.language = :lang', { lang });
+    if (quality) qb.andWhere('video.quality = :quality', { quality });
+    if (author)
+      qb.andWhere('video.author ILIKE :author', { author: `%${author}%` });
+    if (uploader) qb.andWhere('video.uploader = :uploader', { uploader });
+
+    const videos = await qb
+      .orderBy('video.episode', 'ASC')
+      .skip(offset)
+      .take(limit)
+      .getMany();
+
+    return videos;
   }
 
   async createVideo(video: CreateVideoDto): Promise<ResponseVideoDto> {

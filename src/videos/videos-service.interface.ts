@@ -1,7 +1,7 @@
+import { VideoEntity } from '../entities';
 import {
   AuthorsQueryDto,
   VideosQueryDto,
-  ResponseVideoDto,
   VideosSearchQueryDto,
   CreateVideoDto,
 } from './dto';
@@ -11,9 +11,9 @@ export interface VideosServiceInterface {
 
   getAuthors(query: AuthorsQueryDto): Promise<string[]>;
 
-  search(query: VideosSearchQueryDto): Promise<ResponseVideoDto[]>;
+  search(query: VideosSearchQueryDto): Promise<VideoEntity[]>;
 
-  getByAnimeId(animeId: number, query: VideosQueryDto): Promise<ResponseVideoDto[]>;
+  getByAnimeId(animeId: number, query: VideosQueryDto): Promise<VideoEntity[]>;
 
-  createVideo(video: CreateVideoDto): Promise<ResponseVideoDto>;
+  createVideo(video: CreateVideoDto): Promise<VideoEntity>;
 }
