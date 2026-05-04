@@ -120,13 +120,13 @@ describe('VideosService', () => {
     });
 
     describe('getByAnimeId', () => {
-        it('filters by anime_id only when no params', async () => {
+        it('filters by animeId only when no params', async () => {
             videoRepo.find.mockResolvedValue([]);
 
             await service.getByAnimeId(6, {});
 
             expect(videoRepo.find).toHaveBeenCalledWith({
-                where: { anime_id: 6 },
+                where: { animeId: 6 },
                 order: { episode: 'ASC' },
                 skip: 0,
                 take: 50,
@@ -140,7 +140,7 @@ describe('VideosService', () => {
 
             expect(videoRepo.find).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    where: expect.objectContaining({ anime_id: 6, episode: 5 }),
+                    where: expect.objectContaining({ animeId: 6, episode: 5 }),
                 }),
             );
         });
@@ -198,7 +198,7 @@ describe('VideosService', () => {
             expect(videoRepo.find).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: {
-                        anime_id: 6,
+                        animeId: 6,
                         author: ILike(`%${author}%`),
                     },
                 }),

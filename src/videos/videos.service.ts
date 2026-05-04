@@ -16,8 +16,8 @@ import { DuplicateUrlException } from '../domain';
 @Injectable()
 export class VideosService implements VideosServiceInterface {
     constructor(
-    @InjectRepository(VideoEntity)
-    private readonly videoRepo: Repository<VideoEntity>,
+        @InjectRepository(VideoEntity)
+        private readonly videoRepo: Repository<VideoEntity>,
     ) {}
 
     async getAnimeLength(animeId: number): Promise<number> {
@@ -103,7 +103,7 @@ export class VideosService implements VideosServiceInterface {
             limit = 50,
         } = query;
 
-        const where: Record<string, any> = { anime_id: animeId };
+        const where: Record<string, any> = { animeId };
 
         if (episode) where.episode = episode;
         if (kind) where.kind = kind;
@@ -137,7 +137,7 @@ export class VideosService implements VideosServiceInterface {
         } catch (error) {
             if (
                 error instanceof QueryFailedError &&
-        error?.driverError?.code === '23505'
+                error?.driverError?.code === '23505'
             ) {
                 throw new DuplicateUrlException(video.url);
             }
