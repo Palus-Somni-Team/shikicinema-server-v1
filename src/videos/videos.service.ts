@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { ILike, QueryFailedError, Repository } from 'typeorm';
 
 import { VideosServiceInterface } from './videos-service.interface';
 import {
   AuthorsQueryDto,
   VideosQueryDto,
-  ResponseVideoDto,
   VideosSearchQueryDto,
   CreateVideoDto,
   QualityEnum,
 } from './dto';
 import { VideoEntity } from '../entities';
+import { DuplicateUrlException } from '../domain';
 
 @Injectable()
 export class VideosService implements VideosServiceInterface {
@@ -118,20 +118,28 @@ export class VideosService implements VideosServiceInterface {
     });
   }
 
-  async createVideo(video: CreateVideoDto): Promise<ResponseVideoDto> {
-    return Promise.resolve({
-      id: 1,
-      url: video.url,
-      animeId: video.animeId,
-      episode: video.episode,
-      kind: video.kind,
-      language: video.language,
-      quality: video.quality ?? QualityEnum.UNKNOWN,
-      author: video.author ?? null,
-      watchesCount: 0,
-      uploader: '12345',
-      animeEnglish: video?.animeEnglish ?? '',
-      animeRussian: video?.animeRussian ?? '',
-    });
+  async createVideo(video: CreateVideoDto): Promise<VideoEntity> {
+    try {
+      return await this.videoRepo.save({
+        url: video.url,
+        anime_id: video.animeId,
+        episode: video.episode,
+        kind: video.kind,
+        language: video.language,
+        quality: video.quality ?? QualityEnum.UNKNOWN,
+        author: video.author ?? null,
+        uploader: null, // TODO: add uploader
+        watches_count: 0,
+      });
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        error?.driverError?.code === '23505'
+      ) {
+        throw new DuplicateUrlException(video.url);
+      }
+
+      throw error;
+    }
   }
 }

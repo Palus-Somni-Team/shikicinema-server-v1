@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { ILike, QueryFailedError, Repository } from 'typeorm';
 import { mock } from 'jest-mock-extended';
 
 import { VideosService } from './videos.service';
 import { VideoEntity } from '../entities';
 import { KindEnum, QualityEnum } from './dto';
+import { DuplicateUrlException } from '../domain';
 
 describe('VideosService', () => {
   let service: VideosService;
@@ -312,6 +313,74 @@ describe('VideosService', () => {
 
       expect(qb.skip).toHaveBeenCalledWith(10);
       expect(qb.take).toHaveBeenCalledWith(25);
+    });
+  });
+
+  describe('createVideo', () => {
+    it('maps CreateVideoDto to entity and saves', async () => {
+      videoRepo.save.mockResolvedValue({});
+
+      await service.createVideo({
+        url: 'https://example.com/video',
+        animeId: 123,
+        episode: 1,
+        kind: KindEnum.DUBBING,
+        language: 'ru',
+      });
+
+      expect(videoRepo.save).toHaveBeenCalledWith({
+        url: 'https://example.com/video',
+        anime_id: 123,
+        episode: 1,
+        kind: 'озвучка',
+        language: 'ru',
+        quality: QualityEnum.UNKNOWN,
+        author: null,
+        uploader: null,
+        watches_count: 0,
+      });
+    });
+
+    it('maps optional fields when provided', async () => {
+      videoRepo.save.mockResolvedValue({});
+
+      await service.createVideo({
+        url: 'https://example.com/video',
+        animeId: 123,
+        episode: 1,
+        kind: KindEnum.DUBBING,
+        language: 'ru',
+        author: 'Ancord',
+        quality: QualityEnum.BD,
+      });
+
+      expect(videoRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          author: 'Ancord',
+          quality: QualityEnum.BD,
+        }),
+      );
+    });
+
+    it('throws DuplicateUrlException on duplicate URL', async () => {
+      const queryFailedError = new QueryFailedError(
+        'INSERT INTO ...',
+        [],
+        new Error(),
+      );
+      (queryFailedError as any).driverError = { code: '23505' };
+
+      videoRepo.save.mockRejectedValue(queryFailedError);
+
+      await expect(
+        service.createVideo({
+          url: 'https://example.com/video',
+          animeId: 123,
+          episode: 1,
+          kind: KindEnum.DUBBING,
+          language: 'ru',
+        }),
+      ).rejects.toThrow(DuplicateUrlException);
     });
   });
 });

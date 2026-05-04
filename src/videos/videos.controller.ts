@@ -1,4 +1,12 @@
-import { Controller, Get, Logger, Param, Query, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Query,
+  Post,
+  HttpException,
+} from '@nestjs/common';
 
 import { VideosService } from './videos.service';
 import {
@@ -11,6 +19,7 @@ import {
   CreateVideoDto,
 } from './dto';
 import { plainToInstance } from 'class-transformer';
+import { DuplicateUrlException } from '../domain';
 
 @Controller('shikivideos')
 export class VideosController {
@@ -21,9 +30,17 @@ export class VideosController {
 
   @Post()
   async createVideo(@Query() video: CreateVideoDto): Promise<ResponseVideoDto> {
-    const createdVideo = await this._videos.createVideo(video);
+    try {
+      const createdVideo = await this._videos.createVideo(video);
 
-    return plainToInstance(ResponseVideoDto, createdVideo);
+      return plainToInstance(ResponseVideoDto, createdVideo);
+    } catch (e) {
+      if (e instanceof DuplicateUrlException) {
+        throw new HttpException(e.message, 400);
+      }
+
+      throw e;
+    }
   }
 
   @Get('authors')
