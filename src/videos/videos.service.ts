@@ -31,7 +31,24 @@ export class VideosService implements VideosServiceInterface {
   }
 
   async getAuthors(query: AuthorsQueryDto): Promise<string[]> {
-    return Promise.resolve(['Author1', 'Author2', 'Author3']);
+    const qb = this.videoRepo
+      .createQueryBuilder('video')
+      .select('DISTINCT video.author', 'author')
+      .where('video.author IS NOT NULL');
+
+    if (query.name) {
+      qb.andWhere('video.author ILIKE :name', { name: `%${query.name}%` });
+    }
+
+    if (query.animeId) {
+      qb.andWhere('video.anime_id = :animeId', { animeId: query.animeId });
+    }
+
+    qb.orderBy('video.author', 'ASC').limit(query.limit);
+
+    const rows = await qb.getRawMany<{ author: string }>();
+
+    return rows.map((r) => r.author);
   }
 
   async search(query: VideosSearchQueryDto): Promise<ResponseVideoDto[]> {
