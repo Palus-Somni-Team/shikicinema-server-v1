@@ -1,9 +1,10 @@
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { Server } from 'http';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 
 import { VideosService, VideosModule } from '../../src/videos';
+import { addGlobal } from '../../src/add-global';
 
 describe('GET /shikivideos/{animeId}', () => {
   let app: INestApplication;
@@ -20,7 +21,7 @@ describe('GET /shikivideos/{animeId}', () => {
       })
       .compile();
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    addGlobal(app);
     await app.init();
 
     http = (await app.getHttpServer()) as Server;

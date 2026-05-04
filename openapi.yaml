@@ -84,10 +84,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Video'
-        '202':
-          description: Этот URL уже существует в архиве
         '400':
-          $ref: '#/components/responses/BadRequest'
+              description: |
+                Неверные параметры запроса
+                * Отсутствуют обязательные поля
+                * Невалидные значения (kind, quality, episode и т.д.)
+                * URL уже существует в архиве
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/UrlAlreadyExistsError'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -382,6 +388,15 @@ components:
           deprecated: true
           type: string
           example: Триган
+    UrlAlreadyExistsError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Record with this url already exists
+        statusCode:
+          type: integer
+          example: 400
 
   responses:
     BadRequest:

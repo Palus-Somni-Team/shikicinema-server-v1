@@ -6,15 +6,18 @@ import {
   IsPositive,
   IsEnum,
 } from 'class-validator';
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 import { KindEnum } from './kind.enum';
 import { QualityEnum } from './quality.enum';
 
-export class VideoDto {
+@Exclude()
+export class ResponseVideoDto {
+  @Expose()
   @IsInt()
   id: number;
 
+  @Expose()
   @IsString()
   @IsUrl()
   url: string;
@@ -23,22 +26,27 @@ export class VideoDto {
   @IsInt()
   animeId: number;
 
+  @Expose()
   @IsInt()
   @IsPositive()
   episode: number;
 
+  @Expose()
   @IsString()
   @IsEnum(KindEnum)
   kind: KindEnum;
 
+  @Expose()
   @IsString()
   language: string;
 
+  @Expose()
   @IsString()
   @IsOptional()
   @IsEnum(QualityEnum)
   quality?: QualityEnum;
 
+  @Expose()
   @IsString()
   @IsOptional()
   author?: string;
@@ -47,6 +55,7 @@ export class VideoDto {
   @IsInt()
   watchesCount: number;
 
+  @Expose()
   @IsString()
   uploader: string;
 

@@ -1,8 +1,9 @@
 import {
   AuthorsQueryDto,
   VideosQueryDto,
-  VideoDto,
+  ResponseVideoDto,
   VideosSearchQueryDto,
+  CreateVideoDto,
 } from './dto';
 
 export interface VideosServiceInterface {
@@ -10,7 +11,9 @@ export interface VideosServiceInterface {
 
   getAuthors(query: AuthorsQueryDto): Promise<string[]>;
 
-  search(query: VideosSearchQueryDto): Promise<VideoDto[]>;
+  search(query: VideosSearchQueryDto): Promise<ResponseVideoDto[]>;
 
-  getByAnimeId(animeId: number, query: VideosQueryDto): Promise<VideoDto[]>;
+  getByAnimeId(animeId: number, query: VideosQueryDto): Promise<ResponseVideoDto[]>;
+
+  createVideo(video: CreateVideoDto): Promise<ResponseVideoDto>;
 }
