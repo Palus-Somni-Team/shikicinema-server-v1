@@ -2,9 +2,11 @@ import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { Server } from 'http';
 import { INestApplication } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { VideosService, VideosModule } from '../../src/videos';
 import { addGlobal } from '../../src/add-global';
+import { VideoEntity } from '../../src/entities';
 
 describe('GET /shikivideos/:anime_id/length', () => {
   let app: INestApplication;
@@ -15,6 +17,8 @@ describe('GET /shikivideos/:anime_id/length', () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [VideosModule],
     })
+      .overrideProvider(getRepositoryToken(VideoEntity))
+      .useValue({})
       .overrideProvider(VideosService)
       .useValue({
         getAnimeLength: jest.fn().mockResolvedValue(-1),

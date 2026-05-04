@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 import { QualityEnum } from '../videos/dto';
 
-@Entity('videos')
+@Entity('ShikiVideos')
 export class VideoEntity {
     @PrimaryGeneratedColumn()
     id: number;

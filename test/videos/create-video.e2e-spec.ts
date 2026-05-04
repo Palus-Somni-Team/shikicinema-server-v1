@@ -2,10 +2,12 @@ import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { Server } from 'http';
 import { HttpException, INestApplication } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { VideosService, VideosModule } from '../../src/videos';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { addGlobal } from '../../src/add-global';
+import { VideoEntity } from '../../src/entities';
 
 describe('POST /shikivideos', () => {
   const animeId = 123;
@@ -26,6 +28,8 @@ describe('POST /shikivideos', () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [VideosModule],
     })
+      .overrideProvider(getRepositoryToken(VideoEntity))
+      .useValue({})
       .overrideProvider(VideosService)
       .useValue({
         createVideo: jest.fn().mockResolvedValue({

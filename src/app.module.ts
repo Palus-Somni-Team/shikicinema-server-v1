@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { entities } from './entities';
 import { VideosModule } from './videos/videos.module';
 import { StatusModule } from './status/status.module';
 
@@ -18,8 +19,8 @@ import { StatusModule } from './status/status.module';
         username: config.get<string>('DB_USER'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false,
+        entities,
       }),
     }),
     VideosModule,
