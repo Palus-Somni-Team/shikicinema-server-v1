@@ -4,35 +4,41 @@ import { QualityEnum } from '../videos/dto';
 @Entity('ShikiVideos')
 export class VideoEntity {
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Column({ type: 'varchar', length: 2048, unique: true })
-        url: string;
+    url: string;
 
     @Index()
     @Column({ type: 'integer', name: 'anime_id' })
-        animeId: number;
+    animeId: number;
 
     @Column({ type: 'integer' })
-        episode: number;
+    episode: number;
 
     @Column({ type: 'varchar', length: 32 })
-        kind: string;
+    kind: string;
 
     @Column({ type: 'varchar', length: 16, nullable: true })
-        language: string;
+    language: string;
 
     @Column({ type: 'varchar', length: 16, default: 'unknown' })
-        quality: string;
+    quality: string;
 
     @Column({ type: 'varchar', length: 256, nullable: true })
-        author: string | null;
+    author: string | null;
 
     @Column({ type: 'varchar', length: 512, nullable: true })
-        uploader: string | null;
+    uploader: string | null;
 
     @Column({ type: 'integer', name: 'watches_count', default: 0 })
-        watchesCount: number;
+    watchesCount: number;
+
+    @Column({ type: 'varchar', length: 512, nullable: true, name: 'anime_english' })
+    animeEnglish: string | null;
+
+    @Column({ type: 'varchar', length: 512, nullable: true, name: 'anime_russian' })
+    animeRussian: string | null;
 
     constructor(
         animeId: number,
@@ -44,6 +50,8 @@ export class VideoEntity {
         author: string | null = null,
         quality: string = QualityEnum.UNKNOWN,
         watchesCount: number = 0,
+        animeEnglish: string | null = null,
+        animeRussian: string | null = null,
     ) {
         this.animeId = animeId;
         this.episode = episode;
@@ -54,5 +62,7 @@ export class VideoEntity {
         this.author = author;
         this.uploader = uploader;
         this.watchesCount = watchesCount;
+        this.animeEnglish = animeEnglish;
+        this.animeRussian = animeRussian;
     }
 }

@@ -326,6 +326,8 @@ describe('VideosService', () => {
                 episode: 1,
                 kind: KindEnum.DUBBING,
                 language: 'ru',
+                animeEnglish: 'Trigun',
+                animeRussian: 'Триган',
             });
 
             expect(videoRepo.save).toHaveBeenCalledWith({
@@ -338,6 +340,8 @@ describe('VideosService', () => {
                 author: null,
                 uploader: null,
                 watchesCount: 0,
+                animeEnglish: 'Trigun',
+                animeRussian: 'Триган',
             });
         });
 

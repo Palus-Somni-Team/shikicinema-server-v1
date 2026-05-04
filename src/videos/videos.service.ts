@@ -131,6 +131,8 @@ export class VideosService implements VideosServiceInterface {
                 video.author,
                 video.quality ?? QualityEnum.UNKNOWN,
                 0,
+                video.animeEnglish,
+                video.animeRussian,
             );
 
             return await this.videoRepo.save(entity);
