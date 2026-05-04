@@ -330,14 +330,14 @@ describe('VideosService', () => {
 
       expect(videoRepo.save).toHaveBeenCalledWith({
         url: 'https://example.com/video',
-        anime_id: 123,
+        animeId: 123,
         episode: 1,
         kind: 'озвучка',
         language: 'ru',
         quality: QualityEnum.UNKNOWN,
         author: null,
         uploader: null,
-        watches_count: 0,
+        watchesCount: 0,
       });
     });
 

@@ -103,7 +103,8 @@ export class VideosService implements VideosServiceInterface {
       limit = 50,
     } = query;
 
-    const where = { anime_id: animeId };
+    const where: Record<string, any> = { anime_id: animeId };
+
     if (episode) where.episode = episode;
     if (kind) where.kind = kind;
     if (lang) where.language = lang;
@@ -120,17 +121,19 @@ export class VideosService implements VideosServiceInterface {
 
   async createVideo(video: CreateVideoDto): Promise<VideoEntity> {
     try {
-      return await this.videoRepo.save({
-        url: video.url,
-        anime_id: video.animeId,
-        episode: video.episode,
-        kind: video.kind,
-        language: video.language,
-        quality: video.quality ?? QualityEnum.UNKNOWN,
-        author: video.author ?? null,
-        uploader: null, // TODO: add uploader
-        watches_count: 0,
-      });
+      const entity = new VideoEntity(
+        video.animeId,
+        video.episode,
+        video.url,
+        video.kind,
+        video.language,
+        null, // TODO: add uploader
+        video.author,
+        video.quality ?? QualityEnum.UNKNOWN,
+        0,
+      );
+
+      return await this.videoRepo.save(entity);
     } catch (error) {
       if (
         error instanceof QueryFailedError &&
@@ -138,7 +141,6 @@ export class VideosService implements VideosServiceInterface {
       ) {
         throw new DuplicateUrlException(video.url);
       }
-
       throw error;
     }
   }

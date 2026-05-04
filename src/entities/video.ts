@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { QualityEnum } from '../videos/dto';
 
 @Entity('videos')
 export class VideoEntity {
@@ -25,11 +26,33 @@ export class VideoEntity {
     quality: string;
 
     @Column({ type: 'varchar', length: 256, nullable: true })
-    author: string;
+    author: string | null;
 
     @Column({ type: 'varchar', length: 512, nullable: true })
-    uploader: string;
+    uploader: string | null;
 
     @Column({ type: 'integer', name: 'watches_count', default: 0 })
     watchesCount: number;
+
+    constructor(
+        animeId: number,
+        episode: number,
+        url: string,
+        kind: string,
+        language: string,
+        uploader: string | null,
+        author: string | null = null,
+        quality: string = QualityEnum.UNKNOWN,
+        watchesCount: number = 0,
+    ) {
+        this.animeId = animeId;
+        this.episode = episode;
+        this.url = url;
+        this.kind = kind;
+        this.language = language;
+        this.quality = quality;
+        this.author = author;
+        this.uploader = uploader;
+        this.watchesCount = watchesCount;
+    }
 }
