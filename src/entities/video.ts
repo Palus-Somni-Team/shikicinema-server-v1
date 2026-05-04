@@ -22,7 +22,7 @@ export class VideoEntity {
     @Column({ type: 'varchar', length: 16, nullable: true })
     language: string;
 
-    @Column({ type: 'varchar', length: 16, default: 'unknown' })
+    @Column({ type: 'varchar', length: 16, default: QualityEnum.UNKNOWN })
     quality: string;
 
     @Column({ type: 'varchar', length: 256, nullable: true })

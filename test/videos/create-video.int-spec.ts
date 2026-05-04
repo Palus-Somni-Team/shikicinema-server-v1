@@ -10,6 +10,8 @@ import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { DuplicateUrlException } from '../../src/domain';
 
 describe('createVideo (integration)', () => {
+    const url = 'http://integration-test.local/video';
+
     let moduleFixture: TestingModule;
     let service: VideosService;
     let repo: Repository<VideoEntity>;
@@ -49,7 +51,9 @@ describe('createVideo (integration)', () => {
         }
     });
 
-    const url = 'http://integration-test.local/video';
+    beforeEach(async () => {
+        await repo.delete({ url });
+    });
 
     afterEach(async () => {
         await repo.delete({ url });
@@ -68,7 +72,7 @@ describe('createVideo (integration)', () => {
         expect(video.url).toBe(url);
         expect(video.animeId).toBe(99999);
         expect(video.episode).toBe(1);
-        expect(video.kind).toBe('озвучка');
+        expect(video.kind).toBe(KindEnum.DUBBING);
         expect(video.language).toBe('ru');
         expect(video.quality).toBe(QualityEnum.UNKNOWN);
         expect(video.author).toBeNull();
@@ -112,5 +116,9 @@ describe('createVideo (integration)', () => {
                 language: 'en',
             }),
         ).rejects.toThrow(DuplicateUrlException);
+
+        const count = await repo.count({ where: { url } });
+
+        expect(count).toBe(1);
     });
 });
