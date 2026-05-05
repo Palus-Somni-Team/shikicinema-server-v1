@@ -29,7 +29,7 @@ describe('GET /shikivideos/:anime_id/length', () => {
             })
             .compile();
         app = moduleFixture.createNestApplication();
-        addGlobal(app);
+        await addGlobal(app);
         await app.init();
 
         http = (await app.getHttpServer()) as Server;

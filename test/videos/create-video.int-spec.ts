@@ -45,7 +45,7 @@ describe('createVideo (integration)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
-        addGlobal(app);
+        await addGlobal(app);
         await app.init();
 
         service = moduleFixture.get<VideosService>(VideosService);

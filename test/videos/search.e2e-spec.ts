@@ -30,7 +30,7 @@ describe('GET /shikivideos/search', () => {
             })
             .compile();
         app = moduleFixture.createNestApplication();
-        addGlobal(app);
+        await addGlobal(app);
         await app.init();
 
         http = (await app.getHttpServer()) as Server;

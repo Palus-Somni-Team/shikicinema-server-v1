@@ -13,14 +13,12 @@ import {
 import { VideosService } from './videos.service';
 import {
 	GetByAnimeIdDto,
-	ResponseAnimeLengthDto,
 	AuthorsQueryDto,
 	VideosQueryDto,
-	ResponseVideoDto,
 	VideosSearchQueryDto,
 	CreateVideoDto,
 } from './dto';
-import { plainToInstance } from 'class-transformer';
+
 import { DuplicateUrlException } from '../domain';
 import { UploadTokenGuard } from '../common/guards/upload-token.guard';
 
@@ -36,11 +34,9 @@ export class VideosController {
 	async createVideo(
 		@Req() req: any,
 		@Query() video: CreateVideoDto
-	): Promise<ResponseVideoDto> {
+	) {
 		try {
-			const createdVideo = await this._videos.createVideo(video, req.uploader);
-
-			return plainToInstance(ResponseVideoDto, createdVideo);
+			return await this._videos.createVideo(video, req.uploader);
 		} catch (e) {
 			if (e instanceof DuplicateUrlException) {
 				throw new HttpException(e.message, 400);
@@ -51,35 +47,27 @@ export class VideosController {
 	}
 
 	@Get('authors')
-	async getAuthors(@Query() query: AuthorsQueryDto): Promise<string[]> {
+	async getAuthors(@Query() query: AuthorsQueryDto) {
 		return await this._videos.getAuthors(query);
 	}
 
 	@Get(':animeId/length')
-	async getAnimeLength(
-		@Param() params: GetByAnimeIdDto,
-	): Promise<ResponseAnimeLengthDto> {
+	async getAnimeLength(@Param() params: GetByAnimeIdDto) {
 		const length = await this._videos.getAnimeLength(params.animeId);
 
 		return { length };
 	}
 
 	@Get('search')
-	async search(
-		@Query() query: VideosSearchQueryDto,
-	): Promise<ResponseVideoDto[]> {
-		const results = await this._videos.search(query);
-
-		return plainToInstance(ResponseVideoDto, results);
+	async search(@Query() query: VideosSearchQueryDto) {
+		return await this._videos.search(query);
 	}
 
 	@Get(':animeId')
 	async getByAnimeId(
 		@Param() params: GetByAnimeIdDto,
 		@Query() query: VideosQueryDto,
-	): Promise<ResponseVideoDto[]> {
-		const anime = await this._videos.getByAnimeId(params.animeId, query);
-
-		return plainToInstance(ResponseVideoDto, anime);
+	) {
+		return await this._videos.getByAnimeId(params.animeId, query);
 	}
 }
