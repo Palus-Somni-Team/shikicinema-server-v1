@@ -16,6 +16,10 @@ export async function addGlobal(app: INestApplication<any>) {
     const openapiFile = await readFile('openapi.yaml', { encoding: 'utf-8' });
     const openapi = yaml.parse(openapiFile);
 
+    app.getHttpAdapter()
+        .getInstance()
+        .set('trust proxy', 1);
+
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.useGlobalInterceptors(
         new ClassSerializerInterceptor(app.get(Reflector), {
