@@ -12,6 +12,7 @@ import {
 } from './dto';
 import { VideoEntity } from '../entities';
 import { DuplicateUrlException } from '../domain';
+import { toLimit } from '../common/utils';
 
 @Injectable()
 export class VideosService implements VideosServiceInterface {
@@ -44,7 +45,11 @@ export class VideosService implements VideosServiceInterface {
             qb.andWhere('video.anime_id = :animeId', { animeId: query.animeId });
         }
 
-        qb.orderBy('video.author', 'ASC').limit(query.limit);
+        qb.orderBy('video.author', 'ASC');
+
+        if (isFinite(query.limit)) {
+            qb.limit(query.limit);
+        }
 
         const rows = await qb.getRawMany<{ author: string }>();
 
@@ -80,11 +85,11 @@ export class VideosService implements VideosServiceInterface {
         if (author)
             qb.andWhere('video.author ILIKE :author', { author: `%${author}%` });
         if (uploader) qb.andWhere('video.uploader = :uploader', { uploader });
+        if (isFinite(limit)) qb.take(limit);
 
         return qb
             .orderBy('video.episode', 'ASC')
             .skip(offset)
-            .take(limit)
             .getMany();
     }
 
@@ -115,7 +120,7 @@ export class VideosService implements VideosServiceInterface {
             where: author ? { ...where, author: ILike(`%${author}%`) } : where,
             order: { episode: 'ASC' },
             skip: offset,
-            take: limit,
+            take: toLimit(limit),
         });
     }
 
