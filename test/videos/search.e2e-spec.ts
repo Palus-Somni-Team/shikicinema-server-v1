@@ -93,15 +93,15 @@ describe('GET /shikivideos/search', () => {
         );
     });
 
-    it('Returns 400 when limit exceeds maximum', async () => {
+    it('accepts limit=all', async () => {
         const spy = jest.spyOn(service, 'search');
 
         const { statusCode } = await request(http).get(
-            '/shikivideos/search?limit=2000',
+            '/shikivideos/search?limit=all',
         );
 
-        expect(statusCode).toBe(400);
-        expect(spy).not.toHaveBeenCalled();
+        expect(statusCode).toBe(200);
+        expect(spy).toHaveBeenCalledWith(expect.objectContaining({ limit: Infinity }));
     });
 
     it('Returns 400 when limit is 0', async () => {
