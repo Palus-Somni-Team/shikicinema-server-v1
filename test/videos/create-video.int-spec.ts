@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
 import request from 'supertest';
+import { In } from 'typeorm';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
@@ -175,6 +176,38 @@ describe('createVideo (integration)', () => {
 
             expect(statusCode).toBe(201);
             expect(body).toMatchObject({ uploader: '278015' });
+        });
+    });
+
+    describe('getContributions', () => {
+        beforeEach(async () => {
+            await service.createVideo(
+                { url: 'http://contrib1.local', animeId: 99999, episode: 1, kind: KindEnum.DUBBING, language: 'ru' },
+                '12345',
+            );
+            await service.createVideo(
+                { url: 'http://contrib2.local', animeId: 99999, episode: 2, kind: KindEnum.DUBBING, language: 'ru' },
+                '12345',
+            );
+            await service.createVideo(
+                { url: 'http://contrib3.local', animeId: 99999, episode: 1, kind: KindEnum.SUBTITLES, language: 'en' },
+                '67890',
+            );
+        });
+
+        afterEach(async () => {
+            await repo.delete({ url: In(['http://contrib1.local', 'http://contrib2.local', 'http://contrib3.local']) });
+        });
+
+        it('counts videos by uploader', async () => {
+
+            const result = await service.getContributions({ uploader: '12345' });
+            expect(result).toBe(2);
+        });
+
+        it('counts all without uploader', async () => {
+            const result = await service.getContributions({});
+            expect(result).toBeGreaterThanOrEqual(3);
         });
     });
 });

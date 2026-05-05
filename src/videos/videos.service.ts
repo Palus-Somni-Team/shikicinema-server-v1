@@ -9,6 +9,7 @@ import {
     VideosSearchQueryDto,
     CreateVideoDto,
     QualityEnum,
+    ContributionsQueryDto,
 } from './dto';
 import { VideoEntity } from '../entities';
 import { DuplicateUrlException } from '../domain';
@@ -150,5 +151,15 @@ export class VideosService implements VideosServiceInterface {
             }
             throw error;
         }
+    }
+
+    async getContributions(query: ContributionsQueryDto): Promise<number> {
+        const where: Record<string, any> = {};
+
+        if (query.uploader) {
+            where.uploader = query.uploader;
+        }
+
+        return await this.videoRepo.count({ where });
     }
 }

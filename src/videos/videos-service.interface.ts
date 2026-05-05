@@ -4,6 +4,7 @@ import {
     VideosQueryDto,
     VideosSearchQueryDto,
     CreateVideoDto,
+    ContributionsQueryDto,
 } from './dto';
 
 export interface VideosServiceInterface {
@@ -16,4 +17,6 @@ export interface VideosServiceInterface {
     getByAnimeId(animeId: number, query: VideosQueryDto): Promise<VideoEntity[]>;
 
     createVideo(video: CreateVideoDto, uploader: string): Promise<VideoEntity>;
+
+    getContributions(query: ContributionsQueryDto): Promise<number>;
 }

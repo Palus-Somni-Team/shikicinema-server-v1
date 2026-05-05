@@ -5,3 +5,4 @@ export * from './videos-search-query.dto';
 export * from './kind.enum';
 export * from './quality.enum';
 export * from './create-video.dto';
+export * from './contributions-query.dto';

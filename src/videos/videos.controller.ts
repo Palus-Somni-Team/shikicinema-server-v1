@@ -17,6 +17,7 @@ import {
 	VideosQueryDto,
 	VideosSearchQueryDto,
 	CreateVideoDto,
+	ContributionsQueryDto,
 } from './dto';
 
 import { DuplicateUrlException } from '../domain';
@@ -51,16 +52,23 @@ export class VideosController {
 		return await this._videos.getAuthors(query);
 	}
 
-	@Get(':animeId/length')
-	async getAnimeLength(@Param() params: GetByAnimeIdDto) {
-		const length = await this._videos.getAnimeLength(params.animeId);
+	@Get('contributions')
+	async getContributions(@Query() query: ContributionsQueryDto) {
+		const count = await this._videos.getContributions(query);
 
-		return { length };
+		return { count };
 	}
 
 	@Get('search')
 	async search(@Query() query: VideosSearchQueryDto) {
 		return await this._videos.search(query);
+	}
+
+	@Get(':animeId/length')
+	async getAnimeLength(@Param() params: GetByAnimeIdDto) {
+		const length = await this._videos.getAnimeLength(params.animeId);
+
+		return { length };
 	}
 
 	@Get(':animeId')

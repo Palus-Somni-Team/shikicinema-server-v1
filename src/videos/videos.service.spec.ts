@@ -388,4 +388,26 @@ describe('VideosService', () => {
             ).rejects.toThrow(DuplicateUrlException);
         });
     });
+
+    describe('getContributions', () => {
+        const mockCount = 5;
+
+        it('counts by uploader', async () => {
+            videoRepo.count.mockResolvedValue(mockCount);
+
+            const result = await service.getContributions({ uploader: '12345' });
+
+            expect(result).toBe(mockCount);
+            expect(videoRepo.count).toHaveBeenCalledWith({ where: { uploader: '12345' } });
+        });
+
+        it('counts all without uploader', async () => {
+            videoRepo.count.mockResolvedValue(mockCount);
+
+            const result = await service.getContributions({});
+
+            expect(result).toBe(mockCount);
+            expect(videoRepo.count).toHaveBeenCalledWith({ where: {} });
+        });
+    });
 });
