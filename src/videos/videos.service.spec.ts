@@ -246,6 +246,36 @@ describe('VideosService', () => {
                 }),
             );
         });
+
+        it('applies multiple filters simultaneously', async () => {
+            videoRepo.find.mockResolvedValue([]);
+
+            await service.getByAnimeId(6, {
+                episode: 5,
+                kind: KindEnum.DUBBING,
+                lang: 'ru',
+                quality: QualityEnum.BD,
+                author: 'Ancord',
+                uploader: '12345',
+                offset: 10,
+                limit: 25,
+            });
+
+            expect(videoRepo.find).toHaveBeenCalledWith({
+                where: {
+                    animeId: 6,
+                    episode: 5,
+                    kind: KindEnum.DUBBING,
+                    language: 'ru',
+                    quality: QualityEnum.BD,
+                    author: ILike('%Ancord%'),
+                    uploader: '12345'
+                },
+                order: { episode: 'ASC' },
+                skip: 10,
+                take: 25,
+            });
+        });
     });
 
     describe('search', () => {
@@ -314,11 +344,33 @@ describe('VideosService', () => {
             expect(qb.skip).toHaveBeenCalledWith(10);
             expect(qb.take).toHaveBeenCalledWith(25);
         });
+
+        it('does not apply any filters when none provided', async () => {
+            const qb = mockQb();
+            videoRepo.createQueryBuilder.mockReturnValue(qb as any);
+
+            await service.search({ offset: 0, limit: 50 });
+
+            expect(qb.where).not.toHaveBeenCalled();
+            expect(qb.andWhere).not.toHaveBeenCalled();
+        });
+
+        it('applies title filter with ILIKE', async () => {
+            const qb = mockQb();
+            videoRepo.createQueryBuilder.mockReturnValue(qb as any);
+
+            await service.search({ title: 'Trigun' });
+
+            expect(qb.where).toHaveBeenCalledWith(
+                '(video.anime_english ILIKE :title OR video.anime_russian ILIKE :title)',
+                expect.objectContaining({ title: '%Trigun%' })
+            );
+        });
     });
 
     describe('createVideo', () => {
         it('maps CreateVideoDto to entity and saves', async () => {
-            videoRepo.save.mockResolvedValue({});
+            videoRepo.save.mockResolvedValue({} as VideoEntity);
 
             await service.createVideo({
                 url: 'https://example.com/video',
@@ -346,7 +398,7 @@ describe('VideosService', () => {
         });
 
         it('maps optional fields when provided', async () => {
-            videoRepo.save.mockResolvedValue({});
+            videoRepo.save.mockResolvedValue({} as VideoEntity);
 
             await service.createVideo({
                 url: 'https://example.com/video',
@@ -387,6 +439,22 @@ describe('VideosService', () => {
                 }, '278015'),
             ).rejects.toThrow(DuplicateUrlException);
         });
+
+        it('rethrows non-duplicate errors', async () => {
+            const otherError = new Error('Database error');
+
+            videoRepo.save.mockRejectedValue(otherError);
+
+            await expect(
+                service.createVideo({
+                    url: 'https://example.com/video',
+                    animeId: 123,
+                    episode: 1,
+                    kind: KindEnum.DUBBING,
+                    language: 'ru',
+                }, '278015')
+            ).rejects.toThrow(Error);
+        });
     });
 
     describe('getContributions', () => {
@@ -408,6 +476,13 @@ describe('VideosService', () => {
 
             expect(result).toBe(mockCount);
             expect(videoRepo.count).toHaveBeenCalledWith({ where: {} });
+        });
+
+        it('handles database errors', async () => {
+            const error = new Error('Database connection failed');
+            videoRepo.count.mockRejectedValue(error);
+
+            await expect(service.getContributions({})).rejects.toThrow(error);
         });
     });
 });

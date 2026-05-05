@@ -6,7 +6,7 @@ export class PaginationQueryDto {
     @IsInt()
     @Min(0)
     @Type(() => Number)
-    offset: number = 0;
+    offset?: number = 0;
 
     @IsOptional()
     @Transform(({ value }) => value === 'all' ? Infinity : Number(value))
