@@ -23,7 +23,15 @@ export class HttpLoggerMiddleware implements NestMiddleware {
     }
 
     use(req: Request, res: Response, next: NextFunction) {
+        const originalSend = res.send.bind(res);
         const start = performance.now();
+
+        let resBody: any = null;
+
+        res.send = (body: any) => {
+            resBody = body;
+            return originalSend(body);
+        };
 
         res.on('finish', () => {
             const durationMs = performance.now() - start;
@@ -36,7 +44,9 @@ export class HttpLoggerMiddleware implements NestMiddleware {
             const status = res.statusCode;
             const query = JSON.stringify(req.query || {});
             const body = JSON.stringify(req.body || {});
-            const resBodySize = res.getHeader('content-length');
+            const resBodySize = resBody
+                ? Buffer.byteLength(JSON.stringify(resBody))
+                : 0;
 
             const line = `${method} ${path} ${status} (${resBodySize} bytes) (${duration}ms) | ${ip} | ${origin} | ${ua}`;
 
