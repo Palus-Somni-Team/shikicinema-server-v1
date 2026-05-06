@@ -4,13 +4,10 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import morgan from 'morgan';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export async function addGlobal(app: INestApplication<any>) {
     const swaggerTitle = 'Shikicinema API v1';
-    const isProduction = process.env.NODE_ENV === 'production';
-    const isTest = process.env.NODE_ENV === 'test';
 
     app.getHttpAdapter()
         .getInstance()
@@ -22,10 +19,6 @@ export async function addGlobal(app: INestApplication<any>) {
             excludeExtraneousValues: true,
         }),
     );
-
-    if (!isTest) {
-        app.use(morgan(isProduction ? 'combined' : 'dev'));
-    }
 
     const config = new DocumentBuilder()
         .setTitle(swaggerTitle)
