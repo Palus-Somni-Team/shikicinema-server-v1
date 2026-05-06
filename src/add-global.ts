@@ -4,17 +4,13 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { readFile } from 'fs/promises';
-import yaml from 'yaml';
-import swagger from 'swagger-ui-express';
 import morgan from 'morgan';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export async function addGlobal(app: INestApplication<any>) {
+    const swaggerTitle = 'Shikicinema API v1';
     const isProduction = process.env.NODE_ENV === 'production';
     const isTest = process.env.NODE_ENV === 'test';
-
-    const openapiFile = await readFile('openapi.yaml', { encoding: 'utf-8' });
-    const openapi = yaml.parse(openapiFile);
 
     app.getHttpAdapter()
         .getInstance()
@@ -31,5 +27,19 @@ export async function addGlobal(app: INestApplication<any>) {
         app.use(morgan(isProduction ? 'combined' : 'dev'));
     }
 
-    app.use('/docs', swagger.serve, swagger.setup(openapi, { customSiteTitle: 'Shikicinema API v1' }));
+    const config = new DocumentBuilder()
+        .setTitle(swaggerTitle)
+        .setVersion('1.0.0')
+        .setContact('Developer', 'https://smarthard.net#contacts', 'th3smartchan@gmail.com')
+        .setLicense('Mozilla Public License Version 2.0', 'https://www.mozilla.org/en-US/MPL/2.0/')
+        .addServer('https://smarthard.net/v1/api/', 'Production server')
+        .addServer('https://dev.smarthard.net/v1/api/', 'Development server')
+        .addBearerAuth()
+        .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+
+    SwaggerModule.setup('docs', app, document, {
+        customSiteTitle: swaggerTitle,
+    });
 }
