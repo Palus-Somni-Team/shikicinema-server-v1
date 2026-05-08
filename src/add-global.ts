@@ -13,6 +13,12 @@ export async function addGlobal(app: INestApplication<any>) {
         .getInstance()
         .set('trust proxy', 1);
 
+    app.enableCors({
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    });
+
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.useGlobalInterceptors(
         new ClassSerializerInterceptor(app.get(Reflector), {
