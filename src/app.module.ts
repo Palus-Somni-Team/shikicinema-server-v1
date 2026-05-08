@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 
 import { entities } from './entities';
 import { VideosModule } from './videos/videos.module';
@@ -26,6 +27,11 @@ import { DatabaseLogger, LoggerModule } from './common/logger';
                 logger,
                 entities,
             }),
+        }),
+        CacheModule.register({
+            isGlobal: true,
+            ttl: 12 * 60 * 60 * 1000,
+            max: 200,
         }),
         VideosModule,
         StatusModule,

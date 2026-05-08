@@ -9,7 +9,10 @@ import {
 	UseGuards,
 	Req,
 	HttpCode,
+	UseInterceptors,
+	Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 import {
 	ApiTags,
 	ApiOperation,
@@ -18,6 +21,7 @@ import {
 	ApiBearerAuth,
 	ApiParam,
 } from '@nestjs/swagger';
+import type { Cache } from 'cache-manager';
 
 import { VideosService } from './videos.service';
 import {
@@ -37,7 +41,8 @@ import { AnimeLengthSchema, ContributionsCountSchema } from './schemas';
 @Controller('shikivideos')
 export class VideosController {
 	constructor(
-		private readonly _logger: Logger,
+		@Inject(CACHE_MANAGER)
+		private readonly _cache: Cache,
 		private readonly _videos: VideosService,
 	) {}
 
@@ -58,7 +63,13 @@ export class VideosController {
 	@UseGuards(UploadTokenGuard)
 	async createVideo(@Req() req: any, @Query() video: CreateVideoDto) {
 		try {
-			return await this._videos.createVideo(video, req.uploader);
+			const created = await this._videos.createVideo(video, req.uploader);
+
+			// чистим вообще для всего, т.к сбрасывать отдельно
+			// для нужного animeId - замучаемся
+			await this._cache.clear();
+
+			return created;
 		} catch (e) {
 			if (e instanceof DuplicateUrlException) {
 				throw new HttpException(e.message, 400);
@@ -69,6 +80,7 @@ export class VideosController {
 	}
 
 	@Get('authors')
+	@UseInterceptors(CacheInterceptor)
 	@ApiOperation({ summary: 'Поиск авторов озвучки/субтитров' })
 	@ApiResponse({ status: 200, description: 'Список авторов', example: ['AniDub', 'AniLibria'] })
 	async getAuthors(@Query() query: AuthorsQueryDto) {
@@ -76,6 +88,7 @@ export class VideosController {
 	}
 
 	@Get('contributions')
+	@UseInterceptors(CacheInterceptor)
 	@ApiOperation({ summary: 'Количество загруженных видео' })
 	@ApiQuery({ name: 'uploader', required: false, type: String })
 	@ApiResponse({ status: 200, description: 'Количество', schema: ContributionsCountSchema })
@@ -93,6 +106,7 @@ export class VideosController {
 	}
 
 	@Get(':animeId/length')
+	@UseInterceptors(CacheInterceptor)
 	@ApiOperation({ summary: 'Максимальный номер эпизода' })
 	@ApiParam({ name: 'animeId', type: 'integer' })
 	@ApiResponse({ status: 200, description: 'Максимальный эпизод', schema: AnimeLengthSchema })
@@ -103,6 +117,7 @@ export class VideosController {
 	}
 
 	@Get(':animeId')
+	@UseInterceptors(CacheInterceptor)
 	@ApiOperation({ summary: 'Найти видео по ID аниме' })
 	@ApiParam({ name: 'animeId', type: 'integer' })
 	@ApiResponse({ status: 200, description: 'Найденные видео', type: [VideoEntity] })

@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
 import request from 'supertest';
 import { In } from 'typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
@@ -40,6 +41,11 @@ describe('createVideo (integration)', () => {
                         synchronize: false,
                         entities: [VideoEntity, AccessTokenEntity, UserEntity],
                     }),
+                }),
+                CacheModule.register({
+                    isGlobal: true,
+                    ttl: 24 * 60 * 60 * 1000,
+                    max: 100,
                 }),
                 VideosModule,
             ],

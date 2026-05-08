@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Repository, DataSource } from 'typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
@@ -30,6 +31,11 @@ describe('search (integration)', () => {
                         synchronize: false,
                         entities: [VideoEntity],
                     }),
+                }),
+                CacheModule.register({
+                    isGlobal: true,
+                    ttl: 24 * 60 * 60 * 1000,
+                    max: 100,
                 }),
                 VideosModule,
             ],

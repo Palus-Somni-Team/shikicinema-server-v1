@@ -1,4 +1,4 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { StatusService } from './status.service';
@@ -8,7 +8,6 @@ import { ResponseStatusDto, ResponseStatusUptimeDto } from './dto';
 @Controller('status')
 export class StatusController {
     constructor(
-        private readonly _logger: Logger,
         private readonly _status: StatusService,
     ) {}
 

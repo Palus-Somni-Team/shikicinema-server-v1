@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { VideosController } from './videos.controller';
@@ -12,7 +12,7 @@ import { AuthModule } from '../auth/auth.module';
         TypeOrmModule.forFeature([VideoEntity]),
     ],
     controllers: [VideosController],
-    providers: [VideosService, Logger],
+    providers: [VideosService],
     exports: [VideosService],
 })
 export class VideosModule {}

@@ -1,9 +1,9 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { StatusController } from './status.controller';
 import { StatusService } from './status.service';
 
 @Module({
     controllers: [StatusController],
-    providers: [StatusService, Logger],
+    providers: [StatusService],
 })
 export class StatusModule {}

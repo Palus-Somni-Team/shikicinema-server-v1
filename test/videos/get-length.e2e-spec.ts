@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { Server } from 'http';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosService, VideosModule } from '../../src/videos';
 import { addGlobal } from '../../src/add-global';
@@ -15,7 +16,7 @@ describe('GET /shikivideos/:anime_id/length', () => {
 
     beforeEach(async () => {
         const moduleFixture = await Test.createTestingModule({
-            imports: [VideosModule],
+            imports: [VideosModule, CacheModule.register({ isGlobal: true, ttl: 0, max: 0 }),],
         })
             .overrideProvider(getRepositoryToken(AccessTokenEntity))
             .useValue({ findOne: jest.fn() })
