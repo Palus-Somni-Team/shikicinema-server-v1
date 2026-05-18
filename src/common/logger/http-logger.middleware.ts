@@ -8,8 +8,8 @@ export class HttpLoggerMiddleware implements NestMiddleware {
     private readonly empty = '-';
     private readonly isVerbose = process.env.SHIKICINEMA_API_V1_LOG === 'verbose';
 
-    private formatString(value?: string): string {
-        return value || this.empty;
+    private formatString(value?: string | string[]): string {
+        return (Array.isArray(value) ? value.join(', ') : value) || this.empty;
     }
 
     private formatUA(userAgent?: string): string {
@@ -47,15 +47,15 @@ export class HttpLoggerMiddleware implements NestMiddleware {
             const resBodySize = resBody
                 ? Buffer.byteLength(JSON.stringify(resBody))
                 : 0;
-
-            const line = `${method} ${path} ${status} (${resBodySize} bytes) (${duration}ms) | ${ip} | ${origin} | ${ua}`;
+            const version = this.formatString(req.headers['x-shikicinema']);
+            const log = `${method} ${path} ${status} (${resBodySize} bytes) (${duration}ms) | ${ip} | ${origin} | ${ua} | ${version} | query: ${query} | body: ${body}`;
 
             if (status >= 500) {
-                this.logger.error(`${line} | query: ${query} | body: ${body}`);
+                this.logger.error(log);
             } else if (status >= 400 || durationMs > 200 || this.isVerbose) {
-                this.logger.warn(`${line} | query: ${query} | body: ${body}`);
+                this.logger.warn(log);
             } else {
-                this.logger.log(`${line} | query: ${query}`);
+                this.logger.log(log);
             }
         });
 
