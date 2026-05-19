@@ -39,9 +39,7 @@ describe('VideosService', () => {
             await service.getAnimeLength(6);
 
             expect(qb.select).toHaveBeenCalledWith('MAX(video.episode)', 'max');
-            expect(qb.where).toHaveBeenCalledWith('video.anime_id = :animeId', {
-                animeId: 6,
-            });
+            expect(qb.where).toHaveBeenCalledWith('video.anime_id = :animeId', { animeId: 6 });
         });
 
         it('returns 0 when no videos found', async () => {
@@ -81,9 +79,7 @@ describe('VideosService', () => {
 
             await service.getAuthors({ name, limit: 20 });
 
-            expect(qb.andWhere).toHaveBeenCalledWith('video.author ILIKE :name', {
-                name: `%${name}%`,
-            });
+            expect(qb.andWhere).toHaveBeenCalledWith('video.author ILIKE :name', { name: `%${name}%` });
         });
 
         it('does not add ILIKE when name is not provided', async () => {
@@ -101,9 +97,7 @@ describe('VideosService', () => {
 
             await service.getAuthors({ animeId: 6, limit: 20 });
 
-            expect(qb.andWhere).toHaveBeenCalledWith('video.anime_id = :animeId', {
-                animeId: 6,
-            });
+            expect(qb.andWhere).toHaveBeenCalledWith('video.anime_id = :animeId', { animeId: 6 });
         });
 
         it('maps rows to string array', async () => {
@@ -125,12 +119,14 @@ describe('VideosService', () => {
 
             await service.getByAnimeId(6, {});
 
-            expect(videoRepo.find).toHaveBeenCalledWith({
-                where: { animeId: 6 },
-                order: { episode: 'ASC' },
-                skip: 0,
-                take: 50,
-            });
+            expect(videoRepo.find).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: { animeId: 6 },
+                    order: { episode: 'ASC' },
+                    skip: 0,
+                    take: 50,
+                }),
+            );
         });
 
         it('adds episode filter', async () => {
@@ -147,18 +143,11 @@ describe('VideosService', () => {
 
         it('adds kind filter', async () => {
             videoRepo.find.mockResolvedValue([]);
+            await service.getByAnimeId(6, { kind: KindEnum.DUBBING, offset: 0, limit: 50 });
 
-            await service.getByAnimeId(6, {
-                kind: KindEnum.DUBBING,
-                offset: 0,
-                limit: 50,
-            });
-
-            expect(videoRepo.find).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    where: expect.objectContaining({ kind: KindEnum.DUBBING }),
-                }),
-            );
+            expect(videoRepo.find).toHaveBeenCalledWith(expect.objectContaining({
+                where: expect.objectContaining({ kind: KindEnum.DUBBING }),
+            }));
         });
 
         it('adds lang filter', async () => {
@@ -261,25 +250,29 @@ describe('VideosService', () => {
                 limit: 25,
             });
 
-            expect(videoRepo.find).toHaveBeenCalledWith({
-                where: {
-                    animeId: 6,
-                    episode: 5,
-                    kind: KindEnum.DUBBING,
-                    language: 'ru',
-                    quality: QualityEnum.BD,
-                    author: ILike('%Ancord%'),
-                    uploader: '12345'
-                },
-                order: { episode: 'ASC' },
-                skip: 10,
-                take: 25,
-            });
+            expect(videoRepo.find).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: {
+                        animeId: 6,
+                        episode: 5,
+                        kind: KindEnum.DUBBING,
+                        language: 'ru',
+                        quality: QualityEnum.BD,
+                        author: ILike('%Ancord%'),
+                        uploader: '12345',
+                    },
+                    order: { episode: 'ASC' },
+                    skip: 10,
+                    take: 25,
+                })
+            );
         });
     });
 
     describe('search', () => {
         const mockQb = () => ({
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            leftJoin: jest.fn().mockReturnThis(),
             where: jest.fn().mockReturnThis(),
             andWhere: jest.fn().mockReturnThis(),
             skip: jest.fn().mockReturnThis(),
@@ -288,17 +281,15 @@ describe('VideosService', () => {
             getMany: jest.fn().mockResolvedValue([]),
         });
 
-        it('searches by title in english and russian', async () => {
+        it('searches by title via relations with anime_titles', async () => {
             const qb = mockQb();
             videoRepo.createQueryBuilder.mockReturnValue(qb as any);
 
-            const title = 'Trigun';
+            await service.search({ title: 'Trigun', offset: 0, limit: 50 });
 
-            await service.search({ title, offset: 0, limit: 50 });
-
-            expect(qb.where).toHaveBeenCalledWith(
-                '(video.anime_english ILIKE :title OR video.anime_russian ILIKE :title)',
-                { title: `%${title}%` },
+            expect(qb.andWhere).toHaveBeenCalledWith(
+                'title_rel.title ILIKE :title',
+                { title: '%Trigun%' },
             );
         });
 
@@ -317,30 +308,12 @@ describe('VideosService', () => {
                 limit: 25,
             });
 
-            expect(qb.andWhere).toHaveBeenCalledWith('video.episode = :episode', {
-                episode: 5,
-            });
-
-            expect(qb.andWhere).toHaveBeenCalledWith('video.kind = :kind', {
-                kind: KindEnum.DUBBING,
-            });
-
-            expect(qb.andWhere).toHaveBeenCalledWith('video.language = :lang', {
-                lang: 'ru',
-            });
-
-            expect(qb.andWhere).toHaveBeenCalledWith('video.quality = :quality', {
-                quality: QualityEnum.BD,
-            });
-
-            expect(qb.andWhere).toHaveBeenCalledWith('video.author ILIKE :author', {
-                author: '%Ancord%',
-            });
-
-            expect(qb.andWhere).toHaveBeenCalledWith('video.uploader = :uploader', {
-                uploader: '12345',
-            });
-
+            expect(qb.andWhere).toHaveBeenCalledWith('video.episode = :episode', { episode: 5 });
+            expect(qb.andWhere).toHaveBeenCalledWith('video.kind = :kind', { kind: KindEnum.DUBBING });
+            expect(qb.andWhere).toHaveBeenCalledWith('video.language = :lang', { lang: 'ru' });
+            expect(qb.andWhere).toHaveBeenCalledWith('video.quality = :quality', { quality: QualityEnum.BD });
+            expect(qb.andWhere).toHaveBeenCalledWith('video.author ILIKE :author', { author: '%Ancord%' });
+            expect(qb.andWhere).toHaveBeenCalledWith('video.uploader = :uploader', { uploader: '12345' });
             expect(qb.skip).toHaveBeenCalledWith(10);
             expect(qb.take).toHaveBeenCalledWith(25);
         });
@@ -354,23 +327,24 @@ describe('VideosService', () => {
             expect(qb.where).not.toHaveBeenCalled();
             expect(qb.andWhere).not.toHaveBeenCalled();
         });
-
-        it('applies title filter with ILIKE', async () => {
-            const qb = mockQb();
-            videoRepo.createQueryBuilder.mockReturnValue(qb as any);
-
-            await service.search({ title: 'Trigun' });
-
-            expect(qb.where).toHaveBeenCalledWith(
-                '(video.anime_english ILIKE :title OR video.anime_russian ILIKE :title)',
-                expect.objectContaining({ title: '%Trigun%' })
-            );
-        });
     });
 
     describe('createVideo', () => {
+        function mockManager(saveImpl: jest.Mock, findOneImpl: jest.Mock) {
+            (videoRepo as any).manager = {
+                transaction: jest.fn().mockImplementation(async (cb: any) => {
+                    return cb({
+                        save: saveImpl,
+                        findOne: findOneImpl,
+                    });
+                }),
+            };
+        }
+
         it('maps CreateVideoDto to entity and saves', async () => {
-            videoRepo.save.mockResolvedValue({} as VideoEntity);
+            const fakeSave = jest.fn().mockResolvedValue({ id: 1 });
+            const fakeFindOne = jest.fn().mockResolvedValue({ id: 1, anime: { titles: [] } });
+            mockManager(fakeSave, fakeFindOne);
 
             await service.createVideo({
                 url: 'https://example.com/video',
@@ -378,27 +352,27 @@ describe('VideosService', () => {
                 episode: 1,
                 kind: KindEnum.DUBBING,
                 language: 'ru',
-                animeEnglish: 'Trigun',
-                animeRussian: 'Триган',
             }, '278015');
 
-            expect(videoRepo.save).toHaveBeenCalledWith({
-                url: 'https://example.com/video',
-                animeId: 123,
-                episode: 1,
-                kind: 'озвучка',
-                language: 'ru',
-                quality: QualityEnum.UNKNOWN,
-                author: null,
-                uploader: '278015',
-                watchesCount: 0,
-                animeEnglish: 'Trigun',
-                animeRussian: 'Триган',
-            });
+            expect(fakeSave).toHaveBeenCalledWith(VideoEntity,
+                expect.objectContaining({
+                    url: 'https://example.com/video',
+                    animeId: 123,
+                    episode: 1,
+                    kind: 'озвучка',
+                    language: 'ru',
+                    quality: QualityEnum.UNKNOWN,
+                    author: null,
+                    uploader: '278015',
+                    watchesCount: 0,
+                }),
+            );
         });
 
         it('maps optional fields when provided', async () => {
-            videoRepo.save.mockResolvedValue({} as VideoEntity);
+            const fakeSave = jest.fn().mockResolvedValue({ id: 1 });
+            const fakeFindOne = jest.fn().mockResolvedValue({ id: 1, anime: { titles: [] } });
+            mockManager(fakeSave, fakeFindOne);
 
             await service.createVideo({
                 url: 'https://example.com/video',
@@ -410,24 +384,30 @@ describe('VideosService', () => {
                 quality: QualityEnum.BD,
             }, '278015');
 
-            expect(videoRepo.save).toHaveBeenCalledWith(
+            expect(fakeSave).toHaveBeenCalledWith(VideoEntity,
                 expect.objectContaining({
                     author: 'Ancord',
                     quality: QualityEnum.BD,
                     uploader: '278015',
-                }),
+                })
             );
         });
 
         it('throws DuplicateUrlException on duplicate URL', async () => {
-            const queryFailedError = new QueryFailedError(
-                'INSERT INTO ...',
-                [],
-                new Error(),
-            );
+            const queryFailedError = new QueryFailedError('...', [], new Error());
             (queryFailedError as any).driverError = { code: '23505' };
 
-            videoRepo.save.mockRejectedValue(queryFailedError);
+            const fakeSave = jest.fn().mockRejectedValue(queryFailedError);
+            const fakeFindOne = jest.fn();
+
+            (videoRepo as any).manager = {
+                transaction: jest.fn().mockImplementation(async (cb: any) => {
+                    return cb({
+                        save: fakeSave,
+                        findOne: fakeFindOne,
+                    });
+                }),
+            };
 
             await expect(
                 service.createVideo({
@@ -442,8 +422,9 @@ describe('VideosService', () => {
 
         it('rethrows non-duplicate errors', async () => {
             const otherError = new Error('Database error');
-
-            videoRepo.save.mockRejectedValue(otherError);
+            const fakeSave = jest.fn().mockRejectedValue(otherError);
+            const fakeFindOne = jest.fn();
+            mockManager(fakeSave, fakeFindOne);
 
             await expect(
                 service.createVideo({
@@ -452,7 +433,7 @@ describe('VideosService', () => {
                     episode: 1,
                     kind: KindEnum.DUBBING,
                     language: 'ru',
-                }, '278015')
+                }, '278015'),
             ).rejects.toThrow(Error);
         });
     });

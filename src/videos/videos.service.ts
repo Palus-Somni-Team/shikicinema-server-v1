@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, QueryFailedError, Repository } from 'typeorm';
 
@@ -69,22 +69,20 @@ export class VideosService implements VideosServiceInterface {
             offset = 0,
             limit = 50,
         } = query;
-
-        const qb = this.videoRepo.createQueryBuilder('video');
+    
+        const qb = this.videoRepo.createQueryBuilder('video')
+            .leftJoinAndSelect('video.anime', 'anime')
+            .leftJoinAndSelect('anime.titles', 'title_rel');
 
         if (title) {
-            qb.where(
-                '(video.anime_english ILIKE :title OR video.anime_russian ILIKE :title)',
-                { title: `%${title}%` },
-            );
+            qb.andWhere('title_rel.title ILIKE :title', { title: `%${title}%` });
         }
 
         if (episode) qb.andWhere('video.episode = :episode', { episode });
         if (kind) qb.andWhere('video.kind = :kind', { kind });
         if (lang) qb.andWhere('video.language = :lang', { lang });
         if (quality) qb.andWhere('video.quality = :quality', { quality });
-        if (author)
-            qb.andWhere('video.author ILIKE :author', { author: `%${author}%` });
+        if (author) qb.andWhere('video.author ILIKE :author', { author: `%${author}%` });
         if (uploader) qb.andWhere('video.uploader = :uploader', { uploader });
         if (isFinite(limit)) qb.take(limit);
 
@@ -122,35 +120,50 @@ export class VideosService implements VideosServiceInterface {
             order: { episode: 'ASC' },
             skip: offset,
             take: toLimit(limit),
+            relations: {
+                anime: {
+                    titles: true
+                }
+            },
         });
     }
 
     async createVideo(video: CreateVideoDto, uploader: string): Promise<VideoEntity> {
-        try {
-            const entity = new VideoEntity(
-                video.animeId,
-                video.episode,
-                video.url,
-                video.kind,
-                video.language,
-                uploader,
-                video.author,
-                video.quality ?? QualityEnum.UNKNOWN,
-                0,
-                video.animeEnglish,
-                video.animeRussian,
-            );
-
-            return await this.videoRepo.save(entity);
-        } catch (error) {
-            if (
-                error instanceof QueryFailedError &&
-                error?.driverError?.code === '23505'
-            ) {
-                throw new DuplicateUrlException(video.url);
+        return this.videoRepo.manager.transaction(async (manager) => {
+            try {
+                const entity = new VideoEntity(
+                    video.animeId,
+                    video.episode,
+                    video.url,
+                    video.kind,
+                    video.language,
+                    uploader,
+                    video.author,
+                    video.quality ?? QualityEnum.UNKNOWN,
+                    0,
+                );
+    
+                const saved = await manager.save(VideoEntity, entity);
+                const uploaded = await manager.findOne(VideoEntity, {
+                    where: { id: saved.id },
+                    relations: { anime: { titles: true } },
+                });
+    
+                if (!uploaded) {
+                    throw new InternalServerErrorException('Failed to load created video');
+                }
+    
+                return uploaded;
+            } catch (error) {
+                if (
+                    error instanceof QueryFailedError &&
+                    error?.driverError?.code === '23505'
+                ) {
+                    throw new DuplicateUrlException(video.url);
+                }
+                throw error;
             }
-            throw error;
-        }
+        });
     }
 
     async getContributions(query: ContributionsQueryDto): Promise<number> {

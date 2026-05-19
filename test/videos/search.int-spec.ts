@@ -6,13 +6,15 @@ import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
-import { VideoEntity } from '../../src/entities';
+import { AnimeEntity, AnimeTitleEntity, VideoEntity, entities } from '../../src/entities';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 
 describe('search (integration)', () => {
     let moduleFixture: TestingModule;
     let service: VideosService;
     let repo: Repository<VideoEntity>;
+    let titleRepo: Repository<AnimeTitleEntity>;
+    let animeRepo: Repository<AnimeEntity>;
 
     beforeAll(async () => {
         moduleFixture = await Test.createTestingModule({
@@ -29,7 +31,7 @@ describe('search (integration)', () => {
                         password: config.get<string>('DB_PASSWORD'),
                         database: config.get<string>('DB_NAME'),
                         synchronize: false,
-                        entities: [VideoEntity],
+                        entities,
                     }),
                 }),
                 CacheModule.register({
@@ -42,9 +44,10 @@ describe('search (integration)', () => {
         }).compile();
 
         service = moduleFixture.get<VideosService>(VideosService);
-        repo = moduleFixture.get<Repository<VideoEntity>>(
-            getRepositoryToken(VideoEntity),
-        );
+
+        repo = moduleFixture.get<Repository<VideoEntity>>(getRepositoryToken(VideoEntity));
+        titleRepo = moduleFixture.get<Repository<AnimeTitleEntity>>(getRepositoryToken(AnimeTitleEntity));
+        animeRepo = moduleFixture.get<Repository<AnimeEntity>>(getRepositoryToken(AnimeEntity));
     });
 
     afterAll(async () => {
@@ -57,6 +60,24 @@ describe('search (integration)', () => {
     const animeId = 99999;
 
     beforeEach(async () => {
+        await repo.delete({ animeId });
+        await titleRepo.delete({ animeId: 99999 });
+        await animeRepo.delete({ id: 99999 });
+
+        await animeRepo.save({
+            id: 99999,
+            genres: [],
+            kind: 'tv',
+            status: 'released',
+        });
+
+        await titleRepo.save([
+            { animeId: 99999, title: 'Trigun', language: 'en', priority: 0 },
+            { animeId: 99999, title: 'Trigun: Badlands Rumble', language: 'en', priority: 1 },
+            { animeId: 99999, title: 'Триган', language: 'ru', priority: 0 },
+            { animeId: 99999, title: 'Триган: Бесплодные земли', language: 'ru', priority: 1 },
+        ]);
+
         await repo.save([
             {
                 animeId,
@@ -66,8 +87,6 @@ describe('search (integration)', () => {
                 language: 'ru',
                 quality: QualityEnum.TV,
                 author: 'Ancord',
-                animeEnglish: 'Trigun',
-                animeRussian: 'Триган',
             },
             {
                 animeId,
@@ -77,8 +96,6 @@ describe('search (integration)', () => {
                 language: 'en',
                 quality: QualityEnum.BD,
                 author: 'AniDub',
-                animeEnglish: 'Fullmetal Alchemist',
-                animeRussian: 'Стальной алхимик',
             },
             {
                 animeId,
@@ -88,14 +105,14 @@ describe('search (integration)', () => {
                 language: 'ru',
                 quality: QualityEnum.WEB,
                 author: 'Ancord',
-                animeEnglish: 'Trigun: Badlands Rumble',
-                animeRussian: 'Триган: Бесплодные земли',
             },
         ]);
     });
 
     afterEach(async () => {
         await repo.delete({ animeId });
+        await titleRepo.delete({ animeId: 99999 });
+        await animeRepo.delete({ id: 99999 });
     });
 
     it('returns test videos when no filters', async () => {
@@ -109,14 +126,14 @@ describe('search (integration)', () => {
     it('searches by title in english', async () => {
         const videos = await service.search({ title: 'Trigun', offset: 0, limit: 50 });
 
-        expect(videos.length).toBe(2);
+        expect(videos.length).toBe(3);
         expect(videos.every(v => v.animeEnglish?.includes('Trigun'))).toBe(true);
     });
 
     it('searches by title in russian', async () => {
         const videos = await service.search({ title: 'Триган', offset: 0, limit: 50 });
 
-        expect(videos.length).toBe(2);
+        expect(videos.length).toBe(3);
         expect(videos.every(v => v.animeRussian?.includes('Триган'))).toBe(true);
     });
 

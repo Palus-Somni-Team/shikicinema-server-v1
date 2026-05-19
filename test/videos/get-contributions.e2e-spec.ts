@@ -6,7 +6,7 @@ import { Server } from 'http';
 import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosModule, VideosService } from '../../src/videos';
-import { AccessTokenEntity, UserEntity, VideoEntity } from '../../src/entities';
+import { AccessTokenEntity, AnimeEntity, AnimeTitleEntity, UserEntity, VideoEntity } from '../../src/entities';
 import { addGlobal } from '../../src/add-global';
 
 
@@ -22,6 +22,10 @@ describe('GET /shikivideos/contributions', () => {
                 CacheModule.register({ isGlobal: true, ttl: 0, max: 0 }),
             ],
         })
+            .overrideProvider(getRepositoryToken(AnimeEntity))
+            .useValue({})
+            .overrideProvider(getRepositoryToken(AnimeTitleEntity))
+            .useValue({})
             .overrideProvider(getRepositoryToken(AccessTokenEntity)).useValue({ findOne: jest.fn() })
             .overrideProvider(getRepositoryToken(UserEntity)).useValue({ findOne: jest.fn() })
             .overrideProvider(getRepositoryToken(VideoEntity)).useValue({})

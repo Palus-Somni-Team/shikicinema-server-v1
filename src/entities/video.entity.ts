@@ -3,11 +3,15 @@ import {
     Column,
     PrimaryGeneratedColumn,
     Index,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
 import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { KindEnum, QualityEnum } from '../videos/dto';
+import { AnimeEntity } from './anime.entity';
+import { selectAnimeName } from '../common/utils';
 
 @Exclude()
 @Entity('ShikiVideos')
@@ -63,15 +67,21 @@ export class VideoEntity {
     @ApiPropertyOptional({ example: 1000, name: 'watches_count' })
     watchesCount: number;
 
-    @Column({ type: 'varchar', length: 512, nullable: true, name: 'anime_english' })
+    @ManyToOne(() => AnimeEntity)
+    @JoinColumn({ name: 'anime_id', referencedColumnName: 'id' })
+    anime: AnimeEntity;
+
     @Expose({ name: 'anime_english' })
     @ApiPropertyOptional({ example: 'One Piece', name: 'anime_english' })
-    animeEnglish: string | null;
+    get animeEnglish(): string | null {
+        return selectAnimeName(this.anime?.titles, 'en');
+    }
 
-    @Column({ type: 'varchar', length: 512, nullable: true, name: 'anime_russian' })
     @Expose({ name: 'anime_russian' })
     @ApiPropertyOptional({ example: 'Ванпис', name: 'anime_russian' })
-    animeRussian: string | null;
+    get animeRussian(): string | null {
+        return selectAnimeName(this.anime?.titles, 'ru');
+    }
 
     constructor(
         animeId: number,
@@ -83,8 +93,6 @@ export class VideoEntity {
         author: string | null = null,
         quality: QualityEnum = QualityEnum.UNKNOWN,
         watchesCount: number = 0,
-        animeEnglish: string | null = null,
-        animeRussian: string | null = null,
     ) {
         this.animeId = animeId;
         this.episode = episode;
@@ -95,7 +103,5 @@ export class VideoEntity {
         this.author = author;
         this.uploader = uploader;
         this.watchesCount = watchesCount;
-        this.animeEnglish = animeEnglish;
-        this.animeRussian = animeRussian;
     }
 }

@@ -6,7 +6,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
-import { VideoEntity } from '../../src/entities';
+import { VideoEntity, entities } from '../../src/entities';
 import { KindEnum } from '../../src/videos/dto';
 
 describe('getAuthors (integration)', () => {
@@ -29,7 +29,7 @@ describe('getAuthors (integration)', () => {
                         password: config.get<string>('DB_PASSWORD'),
                         database: config.get<string>('DB_NAME'),
                         synchronize: false,
-                        entities: [VideoEntity],
+                        entities,
                     }),
                 }),
                 CacheModule.register({
@@ -55,6 +55,9 @@ describe('getAuthors (integration)', () => {
     });
 
     beforeEach(async () => {
+        await repo.delete({ animeId: 1 });
+        await repo.delete({ animeId: 2 });
+        await repo.delete({ animeId: 3 });
         await repo.save([
             { animeId: 1, episode: 1, url: 'http://a1.local', kind: KindEnum.DUBBING, language: 'ru', author: 'Ancord' },
             { animeId: 1, episode: 2, url: 'http://a2.local', kind: KindEnum.DUBBING, language: 'ru', author: 'Ancord' },

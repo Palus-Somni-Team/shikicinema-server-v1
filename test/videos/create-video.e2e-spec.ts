@@ -9,7 +9,7 @@ import { VideosService, VideosModule } from '../../src/videos';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { addGlobal } from '../../src/add-global';
 import { UploadTokenGuard } from '../../src/common/guards/upload-token.guard';
-import { AccessTokenEntity, UserEntity, VideoEntity } from '../../src/entities';
+import { AccessTokenEntity, AnimeEntity, AnimeTitleEntity, UserEntity, VideoEntity } from '../../src/entities';
 
 describe('POST /shikivideos', () => {
     const animeId = 123;
@@ -34,6 +34,10 @@ describe('POST /shikivideos', () => {
                 CacheModule.register({ isGlobal: true, ttl: 0, max: 0 }),
             ],
         })
+            .overrideProvider(getRepositoryToken(AnimeEntity))
+            .useValue({})
+            .overrideProvider(getRepositoryToken(AnimeTitleEntity))
+            .useValue({})
             .overrideProvider(getRepositoryToken(AccessTokenEntity))
             .useValue({ findOne: jest.fn() })
             .overrideProvider(getRepositoryToken(UserEntity))

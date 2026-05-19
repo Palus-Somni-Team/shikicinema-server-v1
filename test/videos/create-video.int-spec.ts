@@ -9,7 +9,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
-import { VideoEntity, AccessTokenEntity, UserEntity } from '../../src/entities';
+import { VideoEntity, AccessTokenEntity, UserEntity, entities } from '../../src/entities';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { DuplicateUrlException } from '../../src/domain';
 import { addGlobal } from '../../src/add-global';
@@ -39,7 +39,7 @@ describe('createVideo (integration)', () => {
                         password: config.get<string>('DB_PASSWORD'),
                         database: config.get<string>('DB_NAME'),
                         synchronize: false,
-                        entities: [VideoEntity, AccessTokenEntity, UserEntity],
+                        entities,
                     }),
                 }),
                 CacheModule.register({

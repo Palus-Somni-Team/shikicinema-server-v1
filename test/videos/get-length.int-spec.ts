@@ -6,7 +6,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
-import { VideoEntity } from '../../src/entities';
+import { VideoEntity, entities } from '../../src/entities';
 
 describe('getAnimeLength (integration)', () => {
     let moduleFixture: TestingModule;
@@ -28,7 +28,7 @@ describe('getAnimeLength (integration)', () => {
                         password: config.get<string>('DB_PASSWORD'),
                         database: config.get<string>('DB_NAME'),
                         synchronize: false,
-                        entities: [VideoEntity],
+                        entities,
                     }),
                 }),
                 CacheModule.register({

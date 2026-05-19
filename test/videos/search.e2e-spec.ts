@@ -8,7 +8,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { VideosService, VideosModule } from '../../src/videos';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { addGlobal } from '../../src/add-global';
-import { AccessTokenEntity, UserEntity, VideoEntity } from '../../src/entities';
+import { AccessTokenEntity, AnimeEntity, AnimeTitleEntity, UserEntity, VideoEntity } from '../../src/entities';
 
 describe('GET /shikivideos/search', () => {
     let app: INestApplication;
@@ -22,6 +22,10 @@ describe('GET /shikivideos/search', () => {
                 CacheModule.register({ isGlobal: true, ttl: 0, max: 0 }),
             ],
         })
+            .overrideProvider(getRepositoryToken(AnimeEntity))
+            .useValue({})
+            .overrideProvider(getRepositoryToken(AnimeTitleEntity))
+            .useValue({})
             .overrideProvider(getRepositoryToken(AccessTokenEntity))
             .useValue({ findOne: jest.fn() })
             .overrideProvider(getRepositoryToken(UserEntity))
