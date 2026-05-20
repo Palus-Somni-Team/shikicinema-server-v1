@@ -8,6 +8,7 @@ import { VideosModule } from './videos/videos.module';
 import { StatusModule } from './status/status.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseLogger, LoggerModule } from './common/logger';
+import { AnimesModule } from './animes/animes.module';
 
 @Module({
     imports: [
@@ -36,6 +37,7 @@ import { DatabaseLogger, LoggerModule } from './common/logger';
         VideosModule,
         StatusModule,
         AuthModule,
+        AnimesModule,
     ],
 })
 export class AppModule {}
