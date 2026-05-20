@@ -10,7 +10,7 @@ export class CreateAnimes1779193729925 implements MigrationInterface {
                 "id" integer NOT NULL PRIMARY KEY,
                 "genres" text[] NOT NULL DEFAULT '{}',
                 "kind" varchar(32) NOT NULL DEFAULT 'tv',
-                "status" varchar(32) NOT NULL DEFAULT 'released',
+                "status" varchar(32) NOT NULL DEFAULT 'anons',
                 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
             )

@@ -10,13 +10,14 @@ import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { AnimeEntity } from './anime.entity';
+import type { LanguageCode } from 'iso-639-1';
 
 @Exclude()
 @Entity('anime_titles')
 export class AnimeTitleEntity {
     @PrimaryGeneratedColumn()
     @Expose()
-    id: number;
+    id!: number;
 
     @Index()
     @Column({ type: 'integer', name: 'anime_id' })
@@ -32,7 +33,7 @@ export class AnimeTitleEntity {
     @Column({ type: 'varchar', length: 2 })
     @Expose()
     @ApiProperty({ example: 'ru' })
-    language: string;
+    language: LanguageCode;
 
     @Column({ type: 'smallint', default: 0 })
     @Expose()
@@ -41,5 +42,12 @@ export class AnimeTitleEntity {
 
     @ManyToOne(() => AnimeEntity)
     @JoinColumn({ name: 'anime_id', referencedColumnName: 'id' })
-    anime: AnimeEntity;
+    anime!: AnimeEntity;
+
+    constructor(animeId: number, title: string, language: LanguageCode, priority = 0) {
+        this.animeId = animeId;
+        this.title = title;
+        this.language = language;
+        this.priority = priority;
+    }
 }
