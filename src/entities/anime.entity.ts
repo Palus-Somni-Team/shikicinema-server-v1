@@ -30,10 +30,10 @@ export class AnimeEntity {
     @ApiProperty({ example: ['Адапатация VN', 'Кемономими'] })
     tags: string[];
 
-    @Column({ type: 'varchar', length: 32 })
+    @Column({ type: 'varchar', length: 32, nullable: true })
     @Expose()
     @ApiProperty({ example: 'tv' })
-    kind: string;
+    kind: string | null;
 
     @Column({ type: 'varchar', length: 16, nullable: true })
     @Expose()
@@ -95,16 +95,16 @@ export class AnimeEntity {
     constructor(
         id: number,
         genres: string[],
-        kind: string,
-        rating: string | null,
-        score: number | null,
-        status: string,
-        duration: number | null,
-        airedOn: Date | null,
-        releasedOn: Date | null,
-        nextEpisodeAt: Date | null,
-        description: string | null,
-        studios: string[],
+        kind: string | null = null,
+        rating: string | null = null,
+        score: number | null = null,
+        status: string = 'anons',
+        duration: number | null = null,
+        airedOn: Date | null = null,
+        releasedOn: Date | null = null,
+        nextEpisodeAt: Date | null = null,
+        description: string | null = null,
+        studios: string[] = [],
         tags: string[] = [],
     ) {
         this.id = id;
