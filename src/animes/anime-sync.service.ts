@@ -35,7 +35,7 @@ export class AnimeSyncService implements OnModuleInit {
         await fs.mkdir(this.postersDir, { recursive: true });
     }
 
-    @Cron('0 16 * * *')
+    @Cron('0 7 * * *')
     async syncAll() {
         const start = Date.now();
 
@@ -62,14 +62,9 @@ export class AnimeSyncService implements OnModuleInit {
         let animes: ShikimoriAnime[];
 
         do {
-            const start = performance.now();
+            const start = Date.now();
 
             animes = await this.shikimoriGQL.fetchAnimesPage(page, limit);
-
-            this.logger.log(`Fetched animes page ${page}`);
-
-            const firstId = animes[0].id;
-            const lastId = animes[animes.length - 1].id;
 
             for (const anime of animes) {
                 await this.syncAnimeMeta(anime);
@@ -80,8 +75,14 @@ export class AnimeSyncService implements OnModuleInit {
 
             page++;
 
-            const duration = (performance.now() - start).toFixed(2);
-            this.logger.log(`Synced page ${page} from ${firstId} - to ${lastId} (${duration}ms, total of ${animes.length} animes)`);
+            if (animes.length > 0) {
+                const duration = formatDuration(intervalToDuration({ start, end: Date.now() }));
+
+                const firstId = animes[0].id;
+                const lastId = animes[animes.length - 1].id;
+
+                this.logger.log(`Synced page ${page} from ${firstId} - to ${lastId} (${duration}, total of ${animes.length} animes)`);
+            }
 
             await this.wait();
         } while (animes.length > 0);
@@ -91,7 +92,10 @@ export class AnimeSyncService implements OnModuleInit {
 
     private async syncAnimeMeta(anime: ShikimoriAnime): Promise<void> {
         try {
-            await this.animeRepo.upsert(toAnimeEntity(anime), ['id']);
+            const existing = await this.animeRepo.findOne({ where: { id: Number(anime.id) } });
+            const entity = toAnimeEntity(anime, existing);
+
+            await this.animeRepo.upsert(entity, ['id']);
 
             this.logger.log(`Updated anime fields for id ${anime.id}`);
         } catch (err) {
@@ -120,19 +124,24 @@ export class AnimeSyncService implements OnModuleInit {
             }
 
             const originalPath = path.join(this.postersDir, `${anime.id}.jpeg`);
-            const avifPath   = path.join(this.postersDir, `${anime.id}.avif`);
-            const webpPath   = path.join(this.postersDir, `${anime.id}.webp`);
+            const avifPath = path.join(this.postersDir, `${anime.id}.avif`);
+            const webpPath = path.join(this.postersDir, `${anime.id}.webp`);
             const placeholderPath = path.join(this.postersDir, `${anime.id}-placeholder.jpeg`);
 
             const response = await fetch(posterUrl, {
                 headers: { 'User-Agent': 'Shikicinema/1.0' },
             }).catch(() => { throw new PosterNotFound(anime.id); });
 
-            const buffer   = Buffer.from(await response.arrayBuffer());
-            const newHash  = createHash('sha256').update(buffer).digest('hex');
+            if (!response.ok) {
+                this.logger.warn(`Poster for ${anime.id} returned HTTP ${response.status}, skipping`);
+                throw new PosterNotFound(anime.id);
+            }
+
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const newHash = createHash('sha256').update(buffer).digest('hex');
 
             const oldBuffer = await fs.readFile(originalPath).catch(() => null);
-            const oldHash   = oldBuffer && createHash('sha256').update(oldBuffer).digest('hex');
+            const oldHash = oldBuffer && createHash('sha256').update(oldBuffer).digest('hex');
 
             if (newHash === oldHash) {
                 throw new PosterHashMatch(originalPath.toString());
@@ -141,25 +150,27 @@ export class AnimeSyncService implements OnModuleInit {
             const image = sharp(buffer);
             const { width } = await image.metadata();
 
-            // webp
-            await image.clone()
-                .resize({ width: Math.round(width * 0.35) })
-                .webp({ quality: 80 })
-                .toFile(webpPath);
-
-            // placeholder
-            await image.clone()
-                .resize({ width: Math.round(width * 0.20) })
-                .jpeg({ quality: 40 })
-                .toFile(placeholderPath);
-
-            // avif
-            await image.clone()
-                .avif({ quality: 80 })
-                .toFile(avifPath);
-
-            // оригинальный jpeg
-            await fs.writeFile(originalPath, buffer);
+            Promise.all([
+                // webp
+                image.clone()
+                    .resize({ width: Math.round(width * 0.35) })
+                    .webp({ quality: 80 })
+                    .toFile(webpPath),
+ 
+                // placeholder
+                image.clone()
+                    .resize({ width: Math.round(width * 0.20) })
+                    .jpeg({ quality: 40 })
+                    .toFile(placeholderPath),
+    
+                // avif
+                image.clone()
+                    .avif({ quality: 80 })
+                    .toFile(avifPath),
+    
+                // оригинальный jpeg
+                fs.writeFile(originalPath, buffer),
+            ]);
 
             this.logger.log(`Posters downloaded for anime ${anime.id}`);
         } catch (err) {
