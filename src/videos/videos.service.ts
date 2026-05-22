@@ -72,10 +72,13 @@ export class VideosService implements VideosServiceInterface {
     
         const qb = this.videoRepo.createQueryBuilder('video')
             .leftJoinAndSelect('video.anime', 'anime')
-            .leftJoinAndSelect('anime.titles', 'title_rel');
+            .leftJoinAndSelect('anime.titles', 'title');
 
         if (title) {
-            qb.andWhere('title_rel.title ILIKE :title', { title: `%${title}%` });
+            qb.andWhere(
+                'video.animeId IN (SELECT at.anime_id FROM anime_titles at WHERE at.title ILIKE :title)', 
+                { title: `%${title}%` }
+            );
         }
 
         if (episode) qb.andWhere('video.episode = :episode', { episode });
@@ -86,10 +89,7 @@ export class VideosService implements VideosServiceInterface {
         if (uploader) qb.andWhere('video.uploader = :uploader', { uploader });
         if (isFinite(limit)) qb.take(limit);
 
-        return qb
-            .orderBy('video.episode', 'ASC')
-            .skip(offset)
-            .getMany();
+        return qb.orderBy('video.episode', 'ASC').skip(offset).getMany();
     }
 
     async getByAnimeId(
