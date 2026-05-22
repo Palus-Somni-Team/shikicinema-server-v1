@@ -92,6 +92,26 @@ export class AnimeEntity {
     @Expose({ name: 'updated_at' })
     updatedAt!: Date;
 
+    @Expose()
+    @ApiProperty({ 
+        example: { 
+            avif: '/static/animes/21.avif',
+            webp: '/static/animes/21.webp', 
+            jpeg: '/static/animes/21.jpeg',
+            placeholder: '/static/animes/21-placeholder.jpeg' 
+        } 
+    })
+    get poster() {
+        const base = `/static/animes/${this.id}`;
+
+        return {
+            avif: `${base}.avif`,
+            webp: `${base}.webp`,
+            jpeg: `${base}.jpeg`,
+            placeholder: `${base}-placeholder.jpeg`,
+        };
+    }
+
     constructor(
         id: number,
         genres: string[],
