@@ -12,7 +12,7 @@ import { formatDate, formatDuration, intervalToDuration } from 'date-fns';
 import { AnimeEntity, AnimeTitleEntity } from '../entities';
 import { ShikimoriGQLService } from './shikimori-gql.service';
 import { ShikimoriAnime } from './types';
-import { getAnimeTitles, toAnimeEntity } from '../common/utils';
+import { getAnimeTitles, toAnimeEntity, waitAsync } from '../common/utils';
 import { PosterHashMatch, PosterNotFound } from '../domain';
 
 @Injectable()
@@ -32,6 +32,7 @@ export class AnimeSyncService implements OnModuleInit {
     ) {}
 
     async onModuleInit() {
+        sharp.cache(false);
         await fs.mkdir(this.postersDir, { recursive: true });
     }
 
@@ -84,7 +85,7 @@ export class AnimeSyncService implements OnModuleInit {
                 this.logger.log(`Synced page ${page} from ${firstId} - to ${lastId} (${duration}, total of ${animes.length} animes)`);
             }
 
-            await this.wait();
+            await waitAsync(this.syncDelayMs);
         } while (animes.length > 0);
 
         this.logger.log(`Sync completed. Total synced: ${totalSynced}`);
@@ -156,13 +157,13 @@ export class AnimeSyncService implements OnModuleInit {
                     .resize({ width: Math.round(width * 0.35) })
                     .webp({ quality: 80 })
                     .toFile(webpPath),
- 
+
                 // placeholder
                 image.clone()
                     .resize({ width: Math.round(width * 0.20) })
                     .jpeg({ quality: 40 })
                     .toFile(placeholderPath),
-    
+
                 // avif
                 image.clone()
                     .avif({ quality: 80 })
@@ -170,9 +171,23 @@ export class AnimeSyncService implements OnModuleInit {
     
                 // оригинальный jpeg
                 fs.writeFile(originalPath, buffer),
-            ]);
+            ]).then(() => {
+                this.logger.log(`Posters downloaded for anime ${anime.id}`);
+            }).catch(async (err) => {
+                this.logger.error(`Failed to process images for anime ${anime.id}:`, err);
 
-            this.logger.log(`Posters downloaded for anime ${anime.id}`);
+                try {
+                    await fs.rm(originalPath);
+                    await fs.rm(avifPath);
+                    await fs.rm(webpPath);
+                    await fs.rm(placeholderPath);
+                } catch (cleanUpErr) {
+                    this.logger.error(`Error during clean up for ${anime.id}:`, cleanUpErr);
+                }
+            }).finally(() => {
+                image.destroy();
+            });
+
         } catch (err) {
             if (err instanceof PosterHashMatch) {
                 this.logger.log(`Posters for anime ${anime.id} up-to-date - skipping`);
@@ -182,9 +197,5 @@ export class AnimeSyncService implements OnModuleInit {
                 this.logger.error(`Failed to download poster for ${anime.id}:`, err);
             }
         }
-    }
-
-    private wait(): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, this.syncDelayMs));
     }
 }
