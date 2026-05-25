@@ -31,7 +31,7 @@ import { AnimesModule } from './animes/animes.module';
         }),
         CacheModule.register({
             isGlobal: true,
-            ttl: 12 * 60 * 60 * 1000,
+            ttl: 60 * 1000,
             max: 200,
         }),
         VideosModule,
