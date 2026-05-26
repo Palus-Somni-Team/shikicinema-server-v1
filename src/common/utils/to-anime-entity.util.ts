@@ -2,7 +2,7 @@ import { ShikimoriAnime } from '../../animes/types';
 import { AnimeEntity } from '../../entities';
 
 export function toAnimeEntity(anime: ShikimoriAnime, existing?: AnimeEntity | null): AnimeEntity {
-    const entity = existing || new AnimeEntity(Number(anime.id), []);
+    const entity = existing || new AnimeEntity(Number(anime.id));
 
     // обновляем поля, которые пришли от shikimori не пустыми
     if (anime.kind) entity.kind = anime.kind;
@@ -11,7 +11,6 @@ export function toAnimeEntity(anime: ShikimoriAnime, existing?: AnimeEntity | nu
     if (anime.status) entity.status = anime.status;
     if (anime.duration) entity.duration = anime.duration;
     if (anime.description) entity.description = anime.description;
-    if (anime.genres?.length) entity.genres = anime.genres.map(({ name }) => name);
     if (anime.studios?.length) entity.studios = anime.studios.map(({ name }) => name);
     if (anime.airedOn?.date) entity.airedOn = new Date(anime.airedOn.date);
     if (anime.nextEpisodeAt) entity.nextEpisodeAt = new Date(anime.nextEpisodeAt);

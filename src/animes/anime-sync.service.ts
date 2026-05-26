@@ -12,7 +12,12 @@ import { formatDate, formatDuration, intervalToDuration } from 'date-fns';
 import { AnimeEntity, AnimeTitleEntity } from '../entities';
 import { ShikimoriGQLService } from './shikimori-gql.service';
 import { ShikimoriAnime } from './types';
-import { getAnimeTitles, toAnimeEntity, waitAsync } from '../common/utils';
+import {
+    getAnimeTitles,
+    toAnimeEntity,
+    toGenreEntity,
+    waitAsync,
+} from '../common/utils';
 import { PosterHashMatch, PosterNotFound } from '../domain';
 
 @Injectable()
@@ -93,10 +98,24 @@ export class AnimeSyncService implements OnModuleInit {
 
     private async syncAnimeMeta(anime: ShikimoriAnime): Promise<void> {
         try {
-            const existing = await this.animeRepo.findOne({ where: { id: Number(anime.id) } });
+            const existing = await this.animeRepo.findOne({
+                where: { id: Number(anime.id) },
+                relations: { genres: true },
+            });
+
             const entity = toAnimeEntity(anime, existing);
 
-            await this.animeRepo.upsert(entity, ['id']);
+            if (anime.genres?.length) {
+                const genres = anime.genres.map((genre) => {
+                    const existingGenre = existing?.genres?.find(({ id }) => Number(genre.id) === id);
+
+                    return toGenreEntity(genre, existingGenre);
+                });
+
+                entity.genres = genres;
+            }
+
+            await this.animeRepo.save(entity);
 
             this.logger.log(`Updated anime fields for id ${anime.id}`);
         } catch (err) {

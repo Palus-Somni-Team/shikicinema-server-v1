@@ -6,11 +6,15 @@ import { AnimesController } from './animes.controller';
 import { AnimesService } from './animes.service';
 import { AnimeSyncService } from './anime-sync.service';
 import { ShikimoriGQLService } from './shikimori-gql.service';
-import { AnimeEntity, AnimeTitleEntity } from '../entities';
+import { AnimeEntity, AnimeTitleEntity, GenreEntity } from '../entities';
 
 @Module({
     imports: [
-      TypeOrmModule.forFeature([AnimeEntity, AnimeTitleEntity]),
+      TypeOrmModule.forFeature([
+        AnimeEntity,
+        AnimeTitleEntity,
+        GenreEntity,
+      ]),
       ScheduleModule.forRoot(),
     ],
     controllers: [AnimesController],

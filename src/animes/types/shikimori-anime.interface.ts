@@ -1,3 +1,10 @@
+import { ShikimoriDate } from './shikimori-date.interface';
+import { ShikimoriGenre } from './shikimori-genre.interface';
+import { ShikimoriPoster } from './shikimori-poster.interface';
+import { ShikimoriRelated } from './shikimori-related.interface';
+import { ShikimoriStudio } from './shikimori-studio.interface';
+import { ShikimoriVideo } from './shikimori-video.interface';
+
 export interface ShikimoriAnime {
     id: string;
     name: string;
@@ -11,28 +18,14 @@ export interface ShikimoriAnime {
     score: number | null;
     status: string | null;
     duration: number | null;
-    airedOn: { year: number; month: number; day: number; date: string } | null;
-    releasedOn: { year: number; month: number; day: number; date: string } | null;
-    url: string | null;
-    nextEpisodeAt: string | null;
-    genres: { id: string; name: string; russian: string; kind: string }[] | null;
-    studios: { id: string; name: string; imageUrl: string }[] | null;
-    related: Array<{
-        id: string;
-        anime: { id: string; name: string } | null;
-        manga: { id: string; name: string } | null;
-        relationKind: string;
-        relationText: string;
-    }> | null;
-    videos: Array<{
-        id: string;
-        url: string;
-        name: string;
-        kind: string;
-        playerUrl: string;
-        imageUrl:
-        string
-    }> | null;
     description: string | null;
-    poster?: { originalUrl: string } | null;
+    url: string | null;
+    airedOn: ShikimoriDate | null;
+    releasedOn: ShikimoriDate | null;
+    nextEpisodeAt: string | null;
+    genres: ShikimoriGenre[] | null;
+    studios: ShikimoriStudio[] | null;
+    related: ShikimoriRelated[] | null;
+    videos: ShikimoriVideo[] | null;
+    poster: ShikimoriPoster | null;
 }
