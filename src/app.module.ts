@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { KeyvCacheableMemory } from 'cacheable';
+import { Keyv } from 'keyv';
 
 import { entities } from './entities';
 import { VideosModule } from './videos/videos.module';
@@ -31,8 +33,14 @@ import { AnimesModule } from './animes/animes.module';
         }),
         CacheModule.register({
             isGlobal: true,
-            ttl: 60 * 1000,
-            max: 200,
+            stores: [
+                new Keyv({
+                    store: new KeyvCacheableMemory({
+                        ttl: 60 * 1000,
+                        lruSize: 200,
+                    }),
+                }),
+            ],
         }),
         VideosModule,
         StatusModule,
