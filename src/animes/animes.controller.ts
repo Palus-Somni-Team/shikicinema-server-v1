@@ -17,7 +17,7 @@ import {
 
 import { AnimesService } from './animes.service';
 import { AnimeEntity, AnimeTitleEntity } from '../entities';
-import { GetTitlesQueryDto, GetBatchByIdsDto } from './dto';
+import { GetTitlesQueryDto, AnimeQueryDto } from './dto';
 
 @ApiTags('Animes')
 @Controller('animes')
@@ -28,8 +28,8 @@ export class AnimesController {
     @HttpCode(200)
     @ApiOperation({ summary: 'Запросить аниме по списку ID и фильтрам' })
     @ApiResponse({ status: 200, type: [AnimeEntity] })
-    async query(@Body() body: GetBatchByIdsDto) {
-        return this.animesService.findByIds(body.ids);
+    async query(@Body() body: AnimeQueryDto) {
+        return this.animesService.getByQuery(body);
     }
 
     @Get(':id')

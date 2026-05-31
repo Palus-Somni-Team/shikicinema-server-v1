@@ -11,6 +11,7 @@ import { StatusModule } from './status/status.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseLogger, LoggerModule } from './common/logger';
 import { AnimesModule } from './animes/animes.module';
+import { GenresModule } from './genres/genres.module';
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { AnimesModule } from './animes/animes.module';
         StatusModule,
         AuthModule,
         AnimesModule,
+        GenresModule,
     ],
 })
 export class AppModule {}
