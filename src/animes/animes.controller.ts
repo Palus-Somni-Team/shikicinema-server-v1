@@ -17,7 +17,7 @@ import {
 
 import { AnimesService } from './animes.service';
 import { AnimeEntity, AnimeTitleEntity } from '../entities';
-import { GetTitlesQueryDto, AnimeQueryDto } from './dto';
+import { GetTitlesQueryDto, AnimeQueryDto, AnimeSearchDto } from './dto';
 
 @ApiTags('Animes')
 @Controller('animes')
@@ -26,9 +26,16 @@ export class AnimesController {
 
     @Post('query')
     @HttpCode(200)
-    @ApiOperation({ summary: 'Запросить аниме по списку ID и фильтрам' })
+    @ApiOperation({ summary: 'Аниме по списку ID с фильтрами и сортировкой' })
     @ApiResponse({ status: 200, type: [AnimeEntity] })
     async query(@Body() body: AnimeQueryDto) {
+        return this.animesService.getByQuery(body);
+    }
+
+    @Get()
+    @ApiOperation({ summary: 'Поиск аниме' })
+    @ApiResponse({ status: 200, type: [AnimeEntity] })
+    async search(@Query() body: AnimeSearchDto) {
         return this.animesService.getByQuery(body);
     }
 

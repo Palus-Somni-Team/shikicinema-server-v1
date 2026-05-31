@@ -4,8 +4,9 @@ import { Repository } from 'typeorm';
 import { LanguageCode } from 'iso-639-1';
 
 import { AnimeEntity, AnimeTitleEntity, GenreEntity } from '../entities';
-import { AnimeQueryDto } from './dto';
+import { AnimeQueryDto, AnimeSearchDto } from './dto';
 import { SortOrderEnum } from '../common/types';
+import { toLimit } from '../common/utils';
 
 @Injectable()
 export class AnimesService {
@@ -31,12 +32,12 @@ export class AnimesService {
         });
     }
 
-    async getByQuery(dto: AnimeQueryDto): Promise<AnimeEntity[]> {
+    async getByQuery(dto: AnimeQueryDto | AnimeSearchDto): Promise<AnimeEntity[]> {
         const qb = this.animeRepo.createQueryBuilder('anime')
             .leftJoinAndSelect('anime.titles', 'title')
             .leftJoinAndSelect('anime.genres', 'genre');
 
-        if (dto.ids?.length) {
+        if ('ids' in dto && dto.ids?.length) {
             qb.andWhere('anime.id IN (:...ids)', { ids: dto.ids });
         }
 
@@ -82,6 +83,18 @@ export class AnimesService {
 
         if (dto.scoreMax) {
             qb.andWhere('anime.score <= :scoreMax', { scoreMax: dto.scoreMax });
+        }
+
+        if ('name' in dto && dto.name) {
+            qb.andWhere('title.title ILIKE :name', { name: `%${dto.name}%` });
+        }
+
+        if ('offset' in dto) {
+            qb.skip(dto.offset || 0);
+        }
+
+        if ('limit' in dto) {
+            qb.take(toLimit(dto.limit));
         }
 
         const sortField = dto.sortBy === 'name' ? 'title.title' : `anime.${dto.sortBy}`;
