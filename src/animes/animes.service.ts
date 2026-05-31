@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { LanguageCode } from 'iso-639-1';
 
 import { AnimeEntity, AnimeTitleEntity } from '../entities';
@@ -26,6 +26,13 @@ export class AnimesService {
         return this.titleRepo.find({
             where: { animeId: id, ...(language && { language }) },
             order: { priority: 'ASC' },
+        });
+    }
+
+    async findByIds(ids: number[]): Promise<AnimeEntity[]> {
+        return this.animeRepo.find({
+            where: { id: In(ids) },
+            relations: { titles: true, genres: true },
         });
     }
 }

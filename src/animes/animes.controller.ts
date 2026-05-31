@@ -4,6 +4,9 @@ import {
     Param,
     Query,
     ParseIntPipe,
+    Post,
+    Body,
+    HttpCode,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -14,12 +17,20 @@ import {
 
 import { AnimesService } from './animes.service';
 import { AnimeEntity, AnimeTitleEntity } from '../entities';
-import { GetTitlesQueryDto } from './dto';
+import { GetTitlesQueryDto, GetBatchByIdsDto } from './dto';
 
 @ApiTags('Animes')
 @Controller('animes')
 export class AnimesController {
     constructor(private readonly animesService: AnimesService) {}
+
+    @Post('query')
+    @HttpCode(200)
+    @ApiOperation({ summary: 'Запросить аниме по списку ID и фильтрам' })
+    @ApiResponse({ status: 200, type: [AnimeEntity] })
+    async query(@Body() body: GetBatchByIdsDto) {
+        return this.animesService.findByIds(body.ids);
+    }
 
     @Get(':id')
     @ApiOperation({ summary: 'Информация об аниме' })
