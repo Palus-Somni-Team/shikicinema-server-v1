@@ -22,11 +22,11 @@ import { GetTitlesQueryDto, AnimeQueryDto, AnimeSearchDto } from './dto';
 @ApiTags('Animes')
 @Controller('animes')
 export class AnimesController {
-    constructor(private readonly animesService: AnimesService) {}
+    constructor(private readonly animesService: AnimesService) { }
 
     @Post('query')
     @HttpCode(200)
-    @ApiOperation({ summary: 'Аниме по списку ID с фильтрами и сортировкой' })
+    @ApiOperation({ summary: 'Фильтрация/сортировка аниме по списку ID' })
     @ApiResponse({ status: 200, type: [AnimeEntity] })
     async query(@Body() body: AnimeQueryDto) {
         return this.animesService.getByQuery(body);
@@ -40,7 +40,7 @@ export class AnimesController {
     }
 
     @Get(':id')
-    @ApiOperation({ summary: 'Информация об аниме' })
+    @ApiOperation({ summary: 'Информация об аниме по ID' })
     @ApiParam({ name: 'id', type: 'integer' })
     @ApiResponse({ status: 200, type: AnimeEntity })
     async findById(@Param('id', ParseIntPipe) id: number) {

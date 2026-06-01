@@ -9,22 +9,22 @@ import { ShikimoriEntryType, ShikimoriGenreKindEnum } from '../animes/types';
 export class GenreEntity {
     @Expose()
     @PrimaryColumn({ type: 'integer' })
-    @ApiProperty({ example: 1 })
+    @ApiProperty({ example: 1, description: 'ID жанра из Shikimori' })
     id: number;
 
     @Expose()
     @Column({ type: 'varchar', length: 64 })
-    @ApiProperty({ example: 'Action' })
+    @ApiProperty({ example: 'Action', description: 'Название на английском' })
     name: string;
 
     @Expose()
     @Column({ type: 'varchar', length: 64 })
-    @ApiProperty({ example: 'Экшен' })
+    @ApiProperty({ example: 'Экшен', description: 'Название на русском' })
     russian: string;
 
     @Expose()
     @Column({ type: 'varchar', length: 16 })
-    @ApiProperty({ example: 'genre' })
+    @ApiProperty({ enum: ShikimoriGenreKindEnum, example: ShikimoriGenreKindEnum.THEME, description: 'Тип жанра' })
     kind: ShikimoriGenreKindEnum;
 
     @Exclude()
