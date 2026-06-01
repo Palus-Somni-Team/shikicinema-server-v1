@@ -12,6 +12,8 @@ import { AuthModule } from './auth/auth.module';
 import { DatabaseLogger, LoggerModule } from './common/logger';
 import { AnimesModule } from './animes/animes.module';
 import { GenresModule } from './genres/genres.module';
+import { MailerModule } from './mailer/mailer.module';
+import { AlertModule } from './common/services/alert';
 
 @Module({
     imports: [
@@ -48,6 +50,8 @@ import { GenresModule } from './genres/genres.module';
         AuthModule,
         AnimesModule,
         GenresModule,
+        MailerModule,
+        AlertModule,
     ],
 })
 export class AppModule {}

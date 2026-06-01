@@ -14,12 +14,15 @@ import {
 import { VideoEntity } from '../entities';
 import { DuplicateUrlException } from '../domain';
 import { toLimit } from '../common/utils';
+import { AlertService } from '../common/services/alert';
 
 @Injectable()
 export class VideosService implements VideosServiceInterface {
     constructor(
         @InjectRepository(VideoEntity)
         private readonly videoRepo: Repository<VideoEntity>,
+
+        private readonly alert: AlertService,
     ) {}
 
     async getAnimeLength(animeId: number): Promise<number> {
@@ -161,6 +164,8 @@ export class VideosService implements VideosServiceInterface {
                 ) {
                     throw new DuplicateUrlException(video.url);
                 }
+
+                this.alert.error('VIDEO SERVICE', 'Video upload failed', error);
                 throw error;
             }
         });

@@ -20,6 +20,7 @@ import {
     waitAsync,
 } from '../common/utils';
 import { AlreadyProcessing, PosterNotFound } from '../domain';
+import { AlertService } from '../common/services/alert';
 
 @Injectable()
 export class AnimeSyncService implements OnModuleInit {
@@ -41,6 +42,8 @@ export class AnimeSyncService implements OnModuleInit {
         private readonly titleRepo: Repository<AnimeTitleEntity>,
 
         private readonly shikimoriGQL: ShikimoriGQLService,
+
+        private readonly alert: AlertService,
     ) {}
 
     async onModuleInit() {
@@ -114,7 +117,7 @@ export class AnimeSyncService implements OnModuleInit {
 
             this.logger.log(`Sync completed. Total synced: ${totalSynced}`);
         } catch (err) {
-            this.logger.error(`Failed to load page ${page}:`, err);
+            this.alert.error('ANIME SYNC', `Failed to load page ${page}`, err);
         }
     }
 
@@ -256,7 +259,7 @@ export class AnimeSyncService implements OnModuleInit {
             if (err instanceof PosterNotFound) {
                 this.logger.warn(err.message);
             } else {
-                this.logger.error(`Failed to download poster for ${anime.id}:`, err);
+                this.alert.error('ANIME SYNC', `Failed to download poster for ${anime.id}:`, err);
             }
         }
     }
@@ -292,7 +295,7 @@ export class AnimeSyncService implements OnModuleInit {
         } catch (err) {
             if (err instanceof AlreadyProcessing) { /* do not log this */ }
             else {
-                this.logger.error(`Studio image "${imgUrl}" (${studioId}):`, err);
+                this.alert.error('ANIME SYNC', `Studio image "${imgUrl}" (${studioId})`, err);
             }
         }
     }
