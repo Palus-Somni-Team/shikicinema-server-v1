@@ -1,6 +1,6 @@
 export class PosterNotFound extends Error {
-    constructor(animeId: number | string) {
-        super(`Poster not found for anime id: ${animeId}`);
+    constructor(message: string) {
+        super(`Poster not found: ${message}`);
         this.name = 'PosterNotFound';
     }
 }
