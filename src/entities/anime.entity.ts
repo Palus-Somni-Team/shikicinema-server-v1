@@ -14,6 +14,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { AnimeTitleEntity } from './anime-title.entity';
 import { GenreEntity } from './genre.entity';
+import { StudioEntity } from './studio.entity';
 
 @Exclude()
 @Entity('animes')
@@ -74,9 +75,13 @@ export class AnimeEntity {
     description: string | null;
 
     @Expose()
-    @Column('text', { array: true, nullable: true })
-    @ApiProperty({ example: ['Sunrise'] })
-    studios: string[];
+    @ManyToMany(() => StudioEntity)
+    @JoinTable({
+        name: 'anime_studios',
+        joinColumn: { name: 'anime_id' },
+        inverseJoinColumn: { name: 'studio_id' },
+    })
+    studios!: StudioEntity[];
 
     @Expose()
     @OneToMany(() => AnimeTitleEntity, (title) => title.anime)
@@ -131,7 +136,6 @@ export class AnimeEntity {
         releasedOn: Date | null = null,
         nextEpisodeAt: Date | null = null,
         description: string | null = null,
-        studios: string[] = [],
         tags: string[] = [],
     ) {
         this.id = id;
@@ -144,7 +148,6 @@ export class AnimeEntity {
         this.releasedOn = releasedOn;
         this.nextEpisodeAt = nextEpisodeAt;
         this.description = description;
-        this.studios = studios;
         this.tags = tags;
     }
 }

@@ -21,7 +21,7 @@ export class AnimesService {
     async findById(id: number): Promise<AnimeEntity | null> {
         return this.animeRepo.findOne({
             where: { id },
-            relations: { titles: true, genres: true },
+            relations: { titles: true, genres: true, studios: true },
         });
     }
 
@@ -35,7 +35,8 @@ export class AnimesService {
     async getByQuery(dto: AnimeQueryDto | AnimeSearchDto): Promise<AnimeEntity[]> {
         const qb = this.animeRepo.createQueryBuilder('anime')
             .leftJoinAndSelect('anime.titles', 'title')
-            .leftJoinAndSelect('anime.genres', 'genre');
+            .leftJoinAndSelect('anime.genres', 'genre')
+            .leftJoinAndSelect('anime.studios', 'studio');
 
         if ('ids' in dto && dto.ids?.length) {
             qb.andWhere('anime.id IN (:...ids)', { ids: dto.ids });

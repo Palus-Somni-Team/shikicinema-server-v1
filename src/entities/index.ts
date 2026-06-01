@@ -4,6 +4,7 @@ export { UserEntity } from './user.entity';
 export { AnimeEntity } from './anime.entity';
 export { AnimeTitleEntity } from './anime-title.entity';
 export { GenreEntity } from './genre.entity';
+export { StudioEntity } from './studio.entity';
 
 import { VideoEntity } from './video.entity';
 import { AccessTokenEntity } from './access-token.entity';
@@ -11,6 +12,7 @@ import { UserEntity } from './user.entity';
 import { AnimeEntity } from './anime.entity';
 import { AnimeTitleEntity } from './anime-title.entity';
 import { GenreEntity } from './genre.entity';
+import { StudioEntity } from './studio.entity';
 
 export const entities = [
     VideoEntity,
@@ -19,4 +21,5 @@ export const entities = [
     AnimeEntity,
     AnimeTitleEntity,
     GenreEntity,
+    StudioEntity,
 ];

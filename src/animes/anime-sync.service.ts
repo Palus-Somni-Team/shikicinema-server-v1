@@ -16,6 +16,7 @@ import {
     getAnimeTitles,
     toAnimeEntity,
     toGenreEntity,
+    toStudioEntity,
     waitAsync,
 } from '../common/utils';
 import { PosterHashMatch, PosterNotFound } from '../domain';
@@ -105,6 +106,7 @@ export class AnimeSyncService implements OnModuleInit {
 
             const entity = toAnimeEntity(anime, existing);
 
+            // обновляем жанры
             if (anime.genres?.length) {
                 const genres = anime.genres.map((genre) => {
                     const existingGenre = existing?.genres?.find(({ id }) => Number(genre.id) === id);
@@ -115,6 +117,17 @@ export class AnimeSyncService implements OnModuleInit {
                 entity.genres = genres;
             }
 
+            // обновляем студии
+            if (anime.studios?.length) {
+                const studios = anime.studios.map((studio) => {
+                    const existingStudio = existing?.studios?.find(({ name }) => name === studio.name);
+
+                    return toStudioEntity(studio, existingStudio);
+                });
+                entity.studios = studios;
+            }
+
+            // сохраняем само аниме со связями
             await this.animeRepo.save(entity);
 
             this.logger.log(`Updated anime fields for id ${anime.id}`);
