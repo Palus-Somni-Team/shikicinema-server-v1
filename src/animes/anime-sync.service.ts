@@ -82,7 +82,7 @@ export class AnimeSyncService implements OnModuleInit {
             page++;
 
             if (animes.length > 0) {
-                const duration = formatDuration(intervalToDuration({ start, end: Date.now() }));
+                const duration = formatDuration(intervalToDuration({ start, end: Date.now() })) ?? '<1s';
 
                 const firstId = animes[0].id;
                 const lastId = animes[animes.length - 1].id;
