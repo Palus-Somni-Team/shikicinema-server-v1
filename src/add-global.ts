@@ -1,13 +1,12 @@
-import {
-    ClassSerializerInterceptor,
-    INestApplication,
-    ValidationPipe,
-} from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-export async function addGlobal(app: INestApplication<any>) {
+export async function addGlobal(app: NestExpressApplication) {
     const swaggerTitle = 'Shikicinema API v1';
+
+    app.set('query parser', 'extended');
 
     app.getHttpAdapter()
         .getInstance()

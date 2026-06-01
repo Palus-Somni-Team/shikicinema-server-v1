@@ -22,12 +22,15 @@ export class AnimeFiltersDto {
     @IsArray()
     @IsInt({ each: true })
     @IsPositive({ each: true })
-    genreIds?: number[];
+    @Type(() => Number)
+    genres?: number[];
 
     @IsOptional()
     @IsArray()
-    @IsString({ each: true })
-    studios?: string[];
+    @IsInt({ each: true })
+    @IsPositive({ each: true })
+    @Type(() => Number)
+    studios?: number[];
 
     @IsOptional()
     @IsEnum(AnimeKindEnum)
@@ -76,8 +79,8 @@ export class AnimeFiltersDto {
     scoreMax?: number;
 
     @IsOptional()
-    @IsIn(['id', 'score', 'date_aired', 'date_released', 'name', 'duration'])
-    sortBy?: string = 'id';
+    @IsIn(['id', 'score', 'aired_on', 'released_on', 'name', 'duration'])
+    sort?: string = 'id';
 
     @IsOptional()
     @IsEnum(SortOrderEnum)

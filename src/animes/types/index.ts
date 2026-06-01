@@ -12,3 +12,4 @@ export * from './age-rating.enum';
 export * from './anime-kind.enum';
 export * from './anime-status.enum';
 export * from './anime-season.enum';
+export * from './season-months.const';

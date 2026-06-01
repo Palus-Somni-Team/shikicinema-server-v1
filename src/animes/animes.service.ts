@@ -7,6 +7,7 @@ import { AnimeEntity, AnimeTitleEntity, GenreEntity } from '../entities';
 import { AnimeQueryDto, AnimeSearchDto } from './dto';
 import { SortOrderEnum } from '../common/types';
 import { toLimit } from '../common/utils';
+import { SEASON_MONTHS } from './types';
 
 @Injectable()
 export class AnimesService {
@@ -16,7 +17,7 @@ export class AnimesService {
 
         @InjectRepository(AnimeTitleEntity)
         private readonly titleRepo: Repository<AnimeTitleEntity>,
-    ) {}
+    ) { }
 
     async findById(id: number): Promise<AnimeEntity | null> {
         return this.animeRepo.findOne({
@@ -42,12 +43,18 @@ export class AnimesService {
             qb.andWhere('anime.id IN (:...ids)', { ids: dto.ids });
         }
 
-        if (dto.genreIds?.length) {
-            qb.andWhere('genre.id IN (:...genreIds)', { genreIds: dto.genreIds });
+        if (dto.genres?.length) {
+            qb.andWhere(
+                'anime.id IN (SELECT agen.anime_id FROM anime_genres agen WHERE agen.genre_id IN (:...genres))',
+                { genres: dto.genres }
+            );
         }
 
         if (dto.studios?.length) {
-            qb.andWhere('anime.studios && ARRAY[:...studios]', { studios: dto.studios });
+            qb.andWhere(
+                'anime.id IN (SELECT asub.anime_id FROM anime_studios asub WHERE asub.studio_id IN (:...studios))',
+                { studios: dto.studios }
+            );
         }
 
         if (dto.kind) {
@@ -63,11 +70,9 @@ export class AnimesService {
         }
 
         if (dto.season) {
-            const year = dto.yearFrom || dto.yearTo || new Date().getFullYear();
-            const months = { winter: [1,2,3], spring: [4,5,6], summer: [7,8,9], fall: [10,11,12] }[dto.season];
+            const months = SEASON_MONTHS[dto.season];
 
             qb.andWhere('EXTRACT(MONTH FROM anime.aired_on) IN (:...months)', { months });
-            qb.andWhere('EXTRACT(YEAR FROM anime.aired_on) = :year', { year });
         }
 
         if (dto.yearFrom) {
@@ -101,7 +106,7 @@ export class AnimesService {
             qb.take(toLimit(dto.limit));
         }
 
-        const sortField = dto.sortBy === 'name' ? 'title.title' : `anime.${dto.sortBy}`;
+        const sortField = dto.sort === 'name' ? 'title.title' : `anime.${dto.sort}`;
 
         qb.orderBy(sortField, dto.order || SortOrderEnum.ASC);
 
