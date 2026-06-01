@@ -86,7 +86,10 @@ export class AnimesService {
         }
 
         if ('name' in dto && dto.name) {
-            qb.andWhere('title.title ILIKE :name', { name: `%${dto.name}%` });
+            qb.andWhere(
+                'anime.id IN (SELECT t.anime_id FROM anime_titles t WHERE t.title ILIKE :name)',
+                { name: `%${dto.name}%` }
+            );
         }
 
         if ('offset' in dto) {
