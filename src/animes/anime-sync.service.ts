@@ -44,7 +44,7 @@ export class AnimeSyncService implements OnModuleInit {
         private readonly shikimoriGQL: ShikimoriGQLService,
 
         private readonly alert: AlertService,
-    ) {}
+    ) { }
 
     async onModuleInit() {
         sharp.cache(false);
@@ -103,10 +103,10 @@ export class AnimeSyncService implements OnModuleInit {
 
                 if (animes.length > 0) {
                     const duration = formatDuration(intervalToDuration({ start, end: Date.now() })) ?? '<1s';
-    
+
                     const firstId = animes[0].id;
                     const lastId = animes[animes.length - 1].id;
-    
+
                     this.logger.log(`Synced page ${page} from ${firstId} - to ${lastId} (${duration}, total of ${animes.length} animes)`);
                 }
 
@@ -174,13 +174,13 @@ export class AnimeSyncService implements OnModuleInit {
 
     private async fetchImage(url: string): Promise<Buffer> {
         const headers = { 'User-Agent': 'Shikicinema/1.0' };
-        const response = await fetch(url, { headers})
+        const response = await fetch(url, { headers })
             .catch(() => { throw new PosterNotFound(url) });
 
         if (!response.ok) {
             throw new PosterNotFound(url);
         }
-    
+
         return Buffer.from(await response.arrayBuffer());
     }
 
@@ -278,7 +278,7 @@ export class AnimeSyncService implements OnModuleInit {
             if (!imgUrl) {
                 throw new PosterNotFound(`${studioId} has no imageUrl field (null)`);
             }
-    
+
             const originalPath = path.join(this.studiosDir, `${studioId}.jpeg`);
 
             const studioImg = await this.fetchImage(imgUrl);
@@ -289,12 +289,14 @@ export class AnimeSyncService implements OnModuleInit {
                 this.logger.log(`Studio image "${studio.name}" (${studioId}) up-to-date`);
             } else {
                 await fs.writeFile(originalPath, studioImg);
-    
+
                 this.logger.log(`Studio image "${studio.name}" (${studioId}) downloaded`);
             }
         } catch (err) {
             if (err instanceof AlreadyProcessing) { /* do not log this */ }
-            else {
+            else if (err instanceof PosterNotFound) {
+                this.logger.warn(`Studio image not found: "${studio.name}" (${studioId})`);
+            } else {
                 this.alert.error('ANIME SYNC', `Studio image "${imgUrl}" (${studioId})`, err);
             }
         }
