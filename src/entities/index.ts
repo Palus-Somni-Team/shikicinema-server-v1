@@ -14,6 +14,8 @@ import { AnimeTitleEntity } from './anime-title.entity';
 import { GenreEntity } from './genre.entity';
 import { StudioEntity } from './studio.entity';
 
+import { StudioPosterSubscriber } from './subscribers';
+
 export const entities = [
     VideoEntity,
     AccessTokenEntity,
@@ -22,4 +24,8 @@ export const entities = [
     AnimeTitleEntity,
     GenreEntity,
     StudioEntity,
+];
+
+export const subscribers = [
+    StudioPosterSubscriber,
 ];

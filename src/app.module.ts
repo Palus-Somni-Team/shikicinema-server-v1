@@ -5,7 +5,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { KeyvCacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
 
-import { entities } from './entities';
+import { entities, subscribers } from './entities';
 import { VideosModule } from './videos/videos.module';
 import { StatusModule } from './status/status.module';
 import { AuthModule } from './auth/auth.module';
@@ -32,6 +32,7 @@ import { AlertModule } from './common/services/alert';
                 logging: 'all',
                 logger,
                 entities,
+                subscribers,
             }),
         }),
         CacheModule.register({
