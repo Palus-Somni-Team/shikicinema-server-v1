@@ -91,6 +91,10 @@ export class AnimesService {
             qb.andWhere('anime.score <= :scoreMax', { scoreMax: dto.scoreMax });
         }
 
+        if (dto.scoreMin || dto.scoreMax) {
+            qb.andWhere('anime.score IS NOT NULL');
+        }
+
         if ('name' in dto && dto.name) {
             qb.andWhere(
                 'anime.id IN (SELECT t.anime_id FROM anime_titles t WHERE t.title ILIKE :name)',
