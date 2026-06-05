@@ -118,6 +118,9 @@ export class AnimeSyncService implements OnModuleInit {
 
             this.downloadedStudios.clear();
 
+            // обновляем индексы для meilisearch
+            await this.meilisearch.indexAllAnimes();
+
             this.logger.log(`Sync completed. Total synced: ${totalSynced}`);
         } catch (err) {
             this.alert.error('ANIME SYNC', `Failed to load page ${page}`, err);
@@ -156,9 +159,6 @@ export class AnimeSyncService implements OnModuleInit {
 
             // сохраняем само аниме со связями
             await this.animeRepo.save(entity);
-
-            // обновляем индексы для meilisearch
-            await this.meilisearch.indexAnime(entity);
 
             this.logger.log(`Updated anime fields for id ${anime.id}`);
         } catch (err) {

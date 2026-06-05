@@ -68,10 +68,6 @@ export class MeilisearchService implements OnModuleInit {
         return hits.map(({ id }) => id as number);
     }
 
-    async indexAnime(anime: AnimeEntity): Promise<void> {
-        await this.index.addDocuments([this.toSearchDocument(anime)], { primaryKey: 'id' });
-    }
-
     async indexAllAnimes(): Promise<void> {
         const BATCH = 1_000;
 
