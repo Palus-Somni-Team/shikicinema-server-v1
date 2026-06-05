@@ -14,6 +14,7 @@ import { AnimesModule } from './animes/animes.module';
 import { GenresModule } from './genres/genres.module';
 import { MailerModule } from './mailer/mailer.module';
 import { AlertModule } from './common/services/alert';
+import { MeilisearchModule } from './common/services/meilisearch';
 
 @Module({
     imports: [
@@ -53,6 +54,7 @@ import { AlertModule } from './common/services/alert';
         GenresModule,
         MailerModule,
         AlertModule,
+        MeilisearchModule,
     ],
 })
 export class AppModule {}

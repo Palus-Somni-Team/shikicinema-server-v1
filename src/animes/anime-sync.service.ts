@@ -21,6 +21,7 @@ import {
 } from '../common/utils';
 import { AlreadyProcessing, PosterNotFound } from '../domain';
 import { AlertService } from '../common/services/alert';
+import { MeilisearchService } from '../common/services/meilisearch';
 
 @Injectable()
 export class AnimeSyncService implements OnModuleInit {
@@ -44,7 +45,9 @@ export class AnimeSyncService implements OnModuleInit {
         private readonly shikimoriGQL: ShikimoriGQLService,
 
         private readonly alert: AlertService,
-    ) { }
+
+        private readonly meilisearch: MeilisearchService,
+    ) {}
 
     async onModuleInit() {
         sharp.cache(false);
@@ -153,6 +156,9 @@ export class AnimeSyncService implements OnModuleInit {
 
             // сохраняем само аниме со связями
             await this.animeRepo.save(entity);
+
+            // обновляем индексы для meilisearch
+            await this.meilisearch.indexAnime(entity);
 
             this.logger.log(`Updated anime fields for id ${anime.id}`);
         } catch (err) {

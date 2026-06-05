@@ -8,6 +8,7 @@ import { AnimeQueryDto, AnimeSearchDto } from './dto';
 import { SortOrderEnum } from '../common/types';
 import { toLimit } from '../common/utils';
 import { SEASON_MONTHS } from './types';
+import { MeilisearchService } from '../common/services/meilisearch';
 
 @Injectable()
 export class AnimesService {
@@ -17,7 +18,9 @@ export class AnimesService {
 
         @InjectRepository(AnimeTitleEntity)
         private readonly titleRepo: Repository<AnimeTitleEntity>,
-    ) { }
+
+        private readonly meilisearch: MeilisearchService,
+    ) {}
 
     async findById(id: number): Promise<AnimeEntity | null> {
         return this.animeRepo.findOne({
@@ -38,6 +41,26 @@ export class AnimesService {
             .leftJoinAndSelect('anime.titles', 'title')
             .leftJoinAndSelect('anime.genres', 'genre')
             .leftJoinAndSelect('anime.studios', 'studio');
+
+        if ('name' in dto && dto.name) {
+            const limit = 'limit' in dto ? toLimit(dto.limit) : 50;
+
+            const animeIds = await this.meilisearch.search(dto.name, limit);
+
+            if (animeIds.length === 0) {
+                return [];
+            }
+
+            qb.andWhere('anime.id IN (:...animeIds)', { animeIds });
+
+            qb.addSelect(`ARRAY_POSITION(ARRAY[${animeIds.join(',')}]::integer[], anime.id)`, 'meili_rank');
+            qb.orderBy('meili_rank', 'ASC');
+        } else {
+            const sort = dto?.sort ?? 'id';
+            const sortField = sort === 'name' ? 'title.title' : `anime.${sort}`;
+
+            qb.orderBy(sortField, dto.order || SortOrderEnum.ASC);
+        }
 
         if ('ids' in dto && dto.ids?.length) {
             qb.andWhere('anime.id IN (:...ids)', { ids: dto.ids });
@@ -95,13 +118,6 @@ export class AnimesService {
             qb.andWhere('anime.score IS NOT NULL');
         }
 
-        if ('name' in dto && dto.name) {
-            qb.andWhere(
-                'anime.id IN (SELECT t.anime_id FROM anime_titles t WHERE t.title ILIKE :name)',
-                { name: `%${dto.name}%` }
-            );
-        }
-
         if ('offset' in dto) {
             qb.skip(dto.offset || 0);
         }
@@ -109,10 +125,6 @@ export class AnimesService {
         if ('limit' in dto) {
             qb.take(toLimit(dto.limit));
         }
-
-        const sortField = dto.sort === 'name' ? 'title.title' : `anime.${dto.sort}`;
-
-        qb.orderBy(sortField, dto.order || SortOrderEnum.ASC);
 
         return qb.getMany();
     }

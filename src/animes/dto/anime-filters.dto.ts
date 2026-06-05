@@ -153,7 +153,7 @@ export class AnimeFiltersDto {
     })
     @IsOptional()
     @IsIn(['id', 'score', 'aired_on', 'released_on', 'name', 'duration'])
-    sort?: string = 'id';
+    sort?: string;
 
     @ApiProperty({
         description: 'Порядок сортировки',
@@ -163,5 +163,5 @@ export class AnimeFiltersDto {
     })
     @IsOptional()
     @IsEnum(SortOrderEnum)
-    order?: SortOrderEnum = SortOrderEnum.ASC;
+    order?: SortOrderEnum;
 }
