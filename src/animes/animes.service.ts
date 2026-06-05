@@ -42,6 +42,9 @@ export class AnimesService {
             .leftJoinAndSelect('anime.genres', 'genre')
             .leftJoinAndSelect('anime.studios', 'studio');
 
+        const sort = dto?.sort ?? 'id';
+        const sortField = sort === 'name' ? 'title.title' : `anime.${sort}`;
+
         if ('name' in dto && dto.name) {
             const limit = 'limit' in dto ? toLimit(dto.limit) : 50;
 
@@ -53,12 +56,13 @@ export class AnimesService {
 
             qb.andWhere('anime.id IN (:...animeIds)', { animeIds });
 
-            qb.addSelect(`ARRAY_POSITION(ARRAY[${animeIds.join(',')}]::integer[], anime.id)`, 'meili_rank');
-            qb.orderBy('meili_rank', 'ASC');
+            if (!dto?.sort) {
+                qb.addSelect(`ARRAY_POSITION(ARRAY[${animeIds.join(',')}]::integer[], anime.id)`, 'meili_rank');
+                qb.orderBy('meili_rank', 'ASC');
+            } else {
+                qb.orderBy(sortField, dto.order || SortOrderEnum.ASC);
+            }
         } else {
-            const sort = dto?.sort ?? 'id';
-            const sortField = sort === 'name' ? 'title.title' : `anime.${sort}`;
-
             qb.orderBy(sortField, dto.order || SortOrderEnum.ASC);
         }
 
