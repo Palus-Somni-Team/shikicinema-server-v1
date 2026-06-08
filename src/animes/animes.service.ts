@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { LanguageCode } from 'iso-639-1';
 
 import { AnimeEntity, AnimeTitleEntity, GenreEntity } from '../entities';
@@ -22,6 +22,29 @@ export class AnimesService {
         private readonly meilisearch: MeilisearchService,
     ) {}
 
+    private addSortOrder(qb: SelectQueryBuilder<AnimeEntity>, dto: AnimeQueryDto | AnimeSearchDto): void {
+        const sort = dto.sort || 'id';
+        const defaultOrder = SortOrderEnum.ASC;
+
+        if (sort === 'name') {
+            const lang = dto.sortLang || 'ru';
+
+            qb.addSelect(
+                `(
+                    SELECT t.title FROM anime_titles t
+                    WHERE t.anime_id = anime.id
+                        AND t.language = '${lang}'
+                    ORDER BY t.priority ASC
+                    LIMIT 1)`,
+                'name_sort',
+            );
+
+            qb.orderBy('name_sort', dto.order || defaultOrder);
+        } else {
+            qb.orderBy(`anime.${sort}`, dto.order || defaultOrder);
+        }
+    }
+
     async findById(id: number): Promise<AnimeEntity | null> {
         return this.animeRepo.findOne({
             where: { id },
@@ -42,9 +65,6 @@ export class AnimesService {
             .leftJoinAndSelect('anime.genres', 'genre')
             .leftJoinAndSelect('anime.studios', 'studio');
 
-        const sort = dto?.sort ?? 'id';
-        const sortField = sort === 'name' ? 'title.title' : `anime.${sort}`;
-
         if ('name' in dto && dto.name) {
             const limit = 'limit' in dto ? toLimit(dto.limit) : 50;
 
@@ -60,10 +80,10 @@ export class AnimesService {
                 qb.addSelect(`ARRAY_POSITION(ARRAY[${animeIds.join(',')}]::integer[], anime.id)`, 'meili_rank');
                 qb.orderBy('meili_rank', 'ASC');
             } else {
-                qb.orderBy(sortField, dto.order || SortOrderEnum.ASC);
+                this.addSortOrder(qb, dto);
             }
         } else {
-            qb.orderBy(sortField, dto.order || SortOrderEnum.ASC);
+            this.addSortOrder(qb, dto);
         }
 
         if ('ids' in dto && dto.ids?.length) {

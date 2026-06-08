@@ -12,6 +12,7 @@ import {
     IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import ISO6391 from 'iso-639-1';
 
 import { AgeRatingEnum, AnimeKindEnum, AnimeSeasonEnum, AnimeStatusEnum } from '../types';
 import { SortOrderEnum } from '../../common/types';
@@ -173,13 +174,23 @@ export class AnimeFiltersDto {
 
     @ApiProperty({
         description: 'Поле для сортировки',
-        enum: ['id', 'score', 'aired_on', 'released_on', 'name', 'duration'],
         required: false,
+        enum: ['id', 'score', 'aired_on', 'released_on', 'name', 'duration'],
         default: 'id',
     })
     @IsOptional()
     @IsIn(['id', 'score', 'aired_on', 'released_on', 'name', 'duration'])
     sort?: string;
+
+    @ApiProperty({
+        description: 'Язык для сортировки по названию (только для sort=name)',
+        required: false,
+        enum: ISO6391.getAllCodes(),
+        default: 'ru',
+    })
+    @IsOptional()
+    @IsEnum(ISO6391.getAllCodes())
+    sortLang?: string = 'ru';
 
     @ApiProperty({
         description: 'Порядок сортировки',
