@@ -102,12 +102,20 @@ export class AnimesService {
             qb.andWhere('EXTRACT(MONTH FROM anime.aired_on) IN (:...months)', { months });
         }
 
-        if (dto.yearFrom) {
-            qb.andWhere('EXTRACT(YEAR FROM anime.aired_on) >= :yearFrom', { yearFrom: dto.yearFrom });
+        if (dto.airedFrom) {
+            qb.andWhere('EXTRACT(YEAR FROM anime.aired_on) >= :airedFrom', { airedFrom: dto.airedFrom });
         }
 
-        if (dto.yearTo) {
-            qb.andWhere('EXTRACT(YEAR FROM anime.aired_on) <= :yearTo', { yearTo: dto.yearTo });
+        if (dto.airedTo) {
+            qb.andWhere('EXTRACT(YEAR FROM anime.aired_on) <= :airedTo', { airedTo: dto.airedTo });
+        }
+
+        if (dto.releasedFrom) {
+            qb.andWhere('EXTRACT(YEAR FROM anime.released_on) >= :releasedFrom', { releasedFrom: dto.releasedFrom });
+        }
+
+        if (dto.releasedTo) {
+            qb.andWhere('EXTRACT(YEAR FROM anime.released_on) <= :releasedTo', { releasedTo: dto.releasedTo });
         }
 
         if (dto.scoreMin) {

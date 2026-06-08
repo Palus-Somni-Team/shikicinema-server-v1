@@ -86,34 +86,60 @@ export class AnimeFiltersDto {
     season?: AnimeSeasonEnum;
 
     @ApiProperty({
-        description: 'Год начала (включительно)',
+        description: 'Начало даты показа',
         type: Number,
         required: false,
         minimum: 1900,
         maximum: 3000,
-        example: 2020,
     })
     @IsOptional()
     @IsInt()
     @Min(1900)
     @Max(3000)
     @Type(() => Number)
-    yearFrom?: number;
+    airedFrom?: number;
 
     @ApiProperty({
-        description: 'Год окончания (включительно)',
+        description: 'Конец даты показа',
         type: Number,
         required: false,
         minimum: 1900,
         maximum: 3000,
-        example: 2025,
     })
     @IsOptional()
     @IsInt()
     @Min(1900)
     @Max(3000)
     @Type(() => Number)
-    yearTo?: number;
+    airedTo?: number;
+
+    @ApiProperty({
+        description: 'Начало даты выхода',
+        type: Number,
+        required: false,
+        minimum: 1900,
+        maximum: 3000,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(1900)
+    @Max(3000)
+    @Type(() => Number)
+    releasedFrom?: number;
+
+    @ApiProperty({
+        description: 'Конец даты выхода',
+        type: Number,
+        required: false,
+        minimum: 1900,
+        maximum: 3000,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(1900)
+    @Max(3000)
+    @Type(() => Number)
+    releasedTo?: number;
 
     @ApiProperty({
         description: 'Минимальная оценка',
