@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { LanguageCode } from 'iso-639-1';
 
-import { AnimeEntity, AnimeTitleEntity, GenreEntity } from '../entities';
+import { AnimeEntity, AnimeTitleEntity } from '../entities';
 import { AnimeQueryDto, AnimeSearchDto } from './dto';
 import { SortOrderEnum } from '../common/types';
 import { toLimit } from '../common/utils';
@@ -23,25 +23,68 @@ export class AnimesService {
     ) {}
 
     private addSortOrder(qb: SelectQueryBuilder<AnimeEntity>, dto: AnimeQueryDto | AnimeSearchDto): void {
-        const sort = dto.sort || 'id';
-        const defaultOrder = SortOrderEnum.ASC;
+        const sort = dto.sort || 'score';
+        const order = dto.order || SortOrderEnum.ASC;
+        const isAnimeQuery = dto instanceof AnimeQueryDto;
 
-        if (sort === 'name') {
-            const lang = dto.sortLang || 'ru';
+        switch (sort) {
+            // сортируем по название на нужном языке с возрастающим приоритетом
+            case 'name': {
+                const { sortLang: lang = 'ru' } = dto;
 
-            qb.addSelect(
-                `(
-                    SELECT t.title FROM anime_titles t
-                    WHERE t.anime_id = anime.id
-                        AND t.language = '${lang}'
-                    ORDER BY t.priority ASC
-                    LIMIT 1)`,
-                'name_sort',
-            );
+                qb.addSelect(
+                    `(SELECT t.title FROM anime_titles t
+                        WHERE t.anime_id = anime.id
+                            AND t.language = '${lang}'
+                        ORDER BY t.priority ASC
+                        LIMIT 1)`,
+                    'name_sort',
+                );
+                qb.orderBy('name_sort', order);
 
-            qb.orderBy('name_sort', dto.order || defaultOrder);
-        } else {
-            qb.orderBy(`anime.${sort}`, dto.order || defaultOrder);
+                break;
+            }
+
+            // сортируем по рейтингу пользователя
+            case 'user_score':
+                if (isAnimeQuery && dto.scores?.length) {
+                    const { scores, ids } = dto;
+                    const cases = ids.map((id, i) => `WHEN ${id} THEN ${scores[i] ?? 0}`).join(' ');
+
+                    qb.orderBy(`(CASE anime.id ${cases} END)`, order);
+                }
+
+                break;
+
+            // сортируем по дате добавления в список
+            case 'user_created':
+                if (isAnimeQuery && dto.created?.length) {
+                    const { created, ids } = dto;
+                    const cases = ids
+                        .map((id, i) => `WHEN ${id} THEN '${created[i] ?? '1900-01-01'}'::timestamptz`)
+                        .join(' ');
+
+                    qb.orderBy(`(CASE anime.id ${cases} END)`, order);
+                }
+
+                break;
+
+            // сортируем по дате обновления в списоке
+            case 'user_updated':
+                if (isAnimeQuery && dto.updated?.length) {
+                    const { updated, ids } = dto;
+                    const cases = ids
+                        .map((id, i) => `WHEN ${id} THEN '${updated[i] ?? '1900-01-01'}'::timestamptz`)
+                        .join(' ');
+
+                    qb.orderBy(`(CASE anime.id ${cases} END)`, order);
+                }
+
+                break;
+
+            // сортировка для всех других полей
+            default:
+                qb.orderBy(`anime.${sort}`, order);
         }
     }
 

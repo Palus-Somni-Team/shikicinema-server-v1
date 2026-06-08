@@ -13,3 +13,5 @@ export * from './anime-kind.enum';
 export * from './anime-status.enum';
 export * from './anime-season.enum';
 export * from './season-months.const';
+export * from './anime-sort-fields.type';
+export * from './anime-query-sort-fields.type';

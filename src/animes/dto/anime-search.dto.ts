@@ -3,6 +3,7 @@ import { IsOptional, IsString } from 'class-validator';
 
 import { AnimeFiltersDto } from './anime-filters.dto';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { AnimeSortFieldsType } from '../types';
 
 export class AnimeSearchDto extends IntersectionType(AnimeFiltersDto, PaginationQueryDto) {
     @ApiProperty({
@@ -14,4 +15,6 @@ export class AnimeSearchDto extends IntersectionType(AnimeFiltersDto, Pagination
     @IsOptional()
     @IsString()
     name?: string;
+
+    override sort?: AnimeSortFieldsType = 'score';
 }

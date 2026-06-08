@@ -14,7 +14,14 @@ import {
 import { Type } from 'class-transformer';
 import ISO6391 from 'iso-639-1';
 
-import { AgeRatingEnum, AnimeKindEnum, AnimeSeasonEnum, AnimeStatusEnum } from '../types';
+import {
+    AgeRatingEnum,
+    ANIME_SORT_FIELDS,
+    AnimeKindEnum,
+    AnimeSeasonEnum,
+    AnimeStatusEnum,
+} from '../types';
+import type { AnimeSortFieldsType } from '../types'
 import { SortOrderEnum } from '../../common/types';
 
 export class AnimeFiltersDto {
@@ -174,13 +181,13 @@ export class AnimeFiltersDto {
 
     @ApiProperty({
         description: 'Поле для сортировки',
+        enum: ANIME_SORT_FIELDS,
         required: false,
-        enum: ['id', 'score', 'aired_on', 'released_on', 'name', 'duration'],
-        default: 'id',
+        default: 'score',
     })
     @IsOptional()
-    @IsIn(['id', 'score', 'aired_on', 'released_on', 'name', 'duration'])
-    sort?: string;
+    @IsIn(ANIME_SORT_FIELDS)
+    sort?: string = 'score';
 
     @ApiProperty({
         description: 'Язык для сортировки по названию (только для sort=name)',
