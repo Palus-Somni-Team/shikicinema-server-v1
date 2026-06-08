@@ -7,7 +7,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { Exclude, Expose } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { KindEnum, QualityEnum } from '../videos/dto';
 import { AnimeEntity } from './anime.entity';
@@ -49,12 +49,12 @@ export class VideoEntity {
 
     @Column({ type: 'varchar', length: 16, default: QualityEnum.UNKNOWN })
     @Expose()
-    @ApiPropertyOptional({ example: QualityEnum.BD, enum: QualityEnum })
+    @ApiProperty({ example: QualityEnum.BD, enum: QualityEnum })
     quality: QualityEnum;
 
     @Column({ type: 'varchar', length: 256, nullable: true })
     @Expose()
-    @ApiPropertyOptional({ example: 'Persona 99', type: 'string', nullable: true })
+    @ApiProperty({ example: 'Persona 99', type: 'string', nullable: true })
     author: string | null;
 
     @Column({ type: 'varchar', length: 512, nullable: true })
@@ -64,7 +64,7 @@ export class VideoEntity {
 
     @Column({ type: 'integer', name: 'watches_count', default: 0 })
     @Expose({ name: 'watches_count' })
-    @ApiPropertyOptional({ example: 1000, name: 'watches_count' })
+    @ApiProperty({ example: 1000, name: 'watches_count' })
     watchesCount: number;
 
     @ManyToOne(() => AnimeEntity)
@@ -72,13 +72,13 @@ export class VideoEntity {
     anime: AnimeEntity;
 
     @Expose({ name: 'anime_english' })
-    @ApiPropertyOptional({ example: 'One Piece', name: 'anime_english' })
+    @ApiProperty({ example: 'One Piece', name: 'anime_english' })
     get animeEnglish(): string | null {
         return selectAnimeName(this.anime?.titles, 'en');
     }
 
     @Expose({ name: 'anime_russian' })
-    @ApiPropertyOptional({ example: 'Ванпис', name: 'anime_russian' })
+    @ApiProperty({ example: 'Ванпис', name: 'anime_russian' })
     get animeRussian(): string | null {
         return selectAnimeName(this.anime?.titles, 'ru');
     }

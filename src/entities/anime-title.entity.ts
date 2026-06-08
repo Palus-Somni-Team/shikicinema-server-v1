@@ -22,7 +22,7 @@ export class AnimeTitleEntity {
     @Index()
     @Column({ type: 'integer', name: 'anime_id' })
     @Expose({ name: 'anime_id' })
-    @ApiProperty({ example: 21 })
+    @ApiProperty({ name: 'anime_id', example: 21 })
     animeId: number;
 
     @Column({ type: 'varchar', length: 512 })

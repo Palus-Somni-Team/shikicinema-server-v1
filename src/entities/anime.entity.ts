@@ -15,6 +15,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { AnimeTitleEntity } from './anime-title.entity';
 import { GenreEntity } from './genre.entity';
 import { StudioEntity } from './studio.entity';
+import { AgeRatingEnum, AnimeKindEnum, AnimeStatusEnum } from '../animes/types';
 
 @Exclude()
 @Entity('animes')
@@ -26,18 +27,21 @@ export class AnimeEntity {
 
     @Expose()
     @Column('text', { array: true, default: '{}' })
-    @ApiProperty({ example: ['Адапатация VN', 'Кемономими'] })
+    @ApiProperty({
+        description: 'Список пользовательских тегов (WIP)',
+        example: ['Адапатация VN', 'Кемономими'],
+    })
     tags: string[];
 
     @Expose()
-    @Column({ type: 'varchar', length: 32, nullable: true })
-    @ApiProperty({ example: 'tv' })
-    kind: string | null;
+    @Column({ type: 'varchar', length: 32, nullable: true, enum: AnimeKindEnum })
+    @ApiProperty({ example: AnimeKindEnum.TV_SPECIAL, enum: AnimeKindEnum })
+    kind: AnimeKindEnum | null;
 
     @Expose()
-    @Column({ type: 'varchar', length: 16, nullable: true })
-    @ApiProperty({ example: 'pg_13' })
-    rating: string | null;
+    @Column({ type: 'varchar', length: 16, nullable: true, enum: AgeRatingEnum })
+    @ApiProperty({ example: AgeRatingEnum.PG13, enum: AgeRatingEnum })
+    rating: AgeRatingEnum | null;
 
     @Expose()
     @Column({ type: 'float', nullable: true })
@@ -45,9 +49,9 @@ export class AnimeEntity {
     score: number | null;
 
     @Expose()
-    @Column({ type: 'varchar', length: 32 })
-    @ApiProperty({ example: 'released' })
-    status: string;
+    @Column({ type: 'varchar', length: 32, enum: AnimeStatusEnum })
+    @ApiProperty({ example: 'released', enum: AnimeStatusEnum  })
+    status: AnimeStatusEnum;
 
     @Expose()
     @Column({ type: 'int', nullable: true })
@@ -56,22 +60,22 @@ export class AnimeEntity {
 
     @Expose({ name: 'aired_on' })
     @Column({ type: 'timestamptz', nullable: true, name: 'aired_on' })
-    @ApiProperty({ example: '1998-04-03T00:00:00' })
+    @ApiProperty({ name: 'aired_on', description: 'Дата начала показа' })
     airedOn: Date | null;
 
     @Expose({ name: 'released_on' })
     @Column({ type: 'timestamptz', nullable: true, name: 'released_on' })
-    @ApiProperty({ example: '1998-04-03T00:00:00' })
+    @ApiProperty({ name: 'released_on', description: 'Дата конца показа' })
     releasedOn: Date | null;
 
     @Expose({ name: 'next_episode_at' })
     @Column({ type: 'timestamptz', nullable: true, name: 'next_episode_at' })
-    @ApiProperty({ example: '2026-06-01T12:00:00' })
+    @ApiProperty({ name: 'next_episode_at', description: 'Дата следующего эпизода' })
     nextEpisodeAt: Date | null;
 
     @Expose()
     @Column({ type: 'text', nullable: true })
-    @ApiProperty({ description: 'Описание на русском' })
+    @ApiProperty({ description: 'Описание на русском', type: String })
     description: string | null;
 
     @Expose()
@@ -81,11 +85,13 @@ export class AnimeEntity {
         joinColumn: { name: 'anime_id' },
         inverseJoinColumn: { name: 'studio_id' },
     })
+    @ApiProperty({ description: 'Список участвовавших в создании студий', type: StudioEntity })
     studios!: StudioEntity[];
 
     @Expose()
     @OneToMany(() => AnimeTitleEntity, (title) => title.anime)
     @JoinColumn({ name: 'id', referencedColumnName: 'anime_id' })
+    @ApiProperty({ description: 'Список названий на разных языках', type: AnimeTitleEntity })
     titles!: AnimeTitleEntity[];
 
     @Expose()
@@ -95,24 +101,28 @@ export class AnimeEntity {
         joinColumn: { name: 'anime_id' },
         inverseJoinColumn: { name: 'genre_id' },
     })
+    @ApiProperty({ description: 'Список жанров из Шикимори', type: GenreEntity })
     genres!: GenreEntity[];
 
     @Expose({ name: 'created_at' })
     @CreateDateColumn({ name: 'created_at' })
+    @ApiProperty({ description: 'Дата первой синхронизации с Шикимори' })
     createdAt!: Date;
 
     @Expose({ name: 'updated_at' })
     @UpdateDateColumn({ name: 'updated_at' })
+    @ApiProperty({ description: 'Дата последней синхронизации с Шикимори' })
     updatedAt!: Date;
 
     @Expose()
-    @ApiProperty({ 
+    @ApiProperty({
+        description: 'Постеры аниме (рекомендуется AVIF для современных устройств)',
         example: { 
             avif: '/static/animes/21.avif',
             webp: '/static/animes/21.webp', 
             jpeg: '/static/animes/21.jpeg',
             placeholder: '/static/animes/21-placeholder.jpeg' 
-        } 
+        },
     })
     get poster() {
         const base = `/static/animes/${this.id}`;
@@ -127,10 +137,10 @@ export class AnimeEntity {
 
     constructor(
         id: number,
-        kind: string | null = null,
-        rating: string | null = null,
+        kind: AnimeKindEnum | null = null,
+        rating: AgeRatingEnum | null = null,
         score: number | null = null,
-        status: string = 'anons',
+        status: AnimeStatusEnum = AnimeStatusEnum.ANONS,
         duration: number | null = null,
         airedOn: Date | null = null,
         releasedOn: Date | null = null,
