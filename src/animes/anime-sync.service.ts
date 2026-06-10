@@ -131,7 +131,10 @@ export class AnimeSyncService implements OnModuleInit {
         try {
             const existing = await this.animeRepo.findOne({
                 where: { id: Number(anime.id) },
-                relations: { genres: true },
+                relations: {
+                    genres: true,
+                    studios: true,
+                },
             });
 
             const entity = toAnimeEntity(anime, existing);
@@ -150,7 +153,7 @@ export class AnimeSyncService implements OnModuleInit {
             // обновляем студии
             if (anime.studios?.length) {
                 const studios = anime.studios.map((studio) => {
-                    const existingStudio = existing?.studios?.find(({ name }) => name === studio.name);
+                    const existingStudio = existing?.studios?.find(({ id }) => Number(studio.id) === id);
 
                     return toStudioEntity(studio, existingStudio);
                 });
