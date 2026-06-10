@@ -21,7 +21,6 @@ import {
     AnimeSeasonEnum,
     AnimeStatusEnum,
 } from '../types';
-import type { AnimeSortFieldsType } from '../types'
 import { SortOrderEnum } from '../../common/types';
 
 export class AnimeFiltersDto {
@@ -52,35 +51,40 @@ export class AnimeFiltersDto {
     studios?: number[];
 
     @ApiProperty({
-        description: 'Тип аниме',
+        description: 'Типы аниме',
         enum: AnimeKindEnum,
+        isArray: true,
         required: false,
-        example: AnimeKindEnum.MUSIC,
+        example: [AnimeKindEnum.TV, AnimeKindEnum.MOVIE],
     })
     @IsOptional()
-    @IsEnum(AnimeKindEnum)
-    kind?: AnimeKindEnum;
+    @IsArray()
+    @IsEnum(AnimeKindEnum, { each: true })
+    kind?: AnimeKindEnum[];
 
     @ApiProperty({
-        description: 'Статус выхода',
+        description: 'Статусы выхода',
         enum: AnimeStatusEnum,
+        isArray: true,
         required: false,
-        example: AnimeStatusEnum.ONGOING,
+        example: [AnimeStatusEnum.ONGOING, AnimeStatusEnum.RELEASED],
     })
     @IsOptional()
-    @IsEnum(AnimeStatusEnum)
-    status?: AnimeStatusEnum;
+    @IsArray()
+    @IsEnum(AnimeStatusEnum, { each: true })
+    status?: AnimeStatusEnum[];
 
     @ApiProperty({
-        description: 'Возрастной рейтинг',
+        description: 'Возрастные рейтинги',
         enum: AgeRatingEnum,
+        isArray: true,
         required: false,
-        example: 'pg_13',
+        example: [AgeRatingEnum.PG13, AgeRatingEnum.R],
     })
     @IsOptional()
-    @IsString()
-    @IsEnum(AgeRatingEnum)
-    ageRating?: AgeRatingEnum;
+    @IsArray()
+    @IsEnum(AgeRatingEnum, { each: true })
+    ageRating?: AgeRatingEnum[];
 
     @ApiProperty({
         description: 'Сезон',

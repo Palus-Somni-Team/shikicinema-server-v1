@@ -25,7 +25,7 @@ export class AnimesService {
     private addSortOrder(qb: SelectQueryBuilder<AnimeEntity>, dto: AnimeQueryDto | AnimeSearchDto): void {
         const sort = dto.sort || 'score';
         const order = dto.order || SortOrderEnum.ASC;
-        const isAnimeQuery = dto instanceof AnimeQueryDto;
+        const userRates = dto instanceof AnimeQueryDto && dto?.userRates;
 
         switch (sort) {
             // сортируем по название на нужном языке с возрастающим приоритетом
@@ -46,24 +46,25 @@ export class AnimesService {
             }
 
             // сортируем по рейтингу пользователя
-            case 'user_score':
-                if (isAnimeQuery && dto.scores?.length) {
-                    const { scores, ids } = dto;
-                    const cases = ids.map((id, i) => `WHEN ${id} THEN ${scores[i] ?? 0}`).join(' ');
-
+            case 'user_score': {
+                if (userRates) {
+                    const cases = userRates
+                        .map(({ id, score }) => `WHEN ${id} THEN ${score}`)
+                        .join(' ');
+    
                     qb.orderBy(`(CASE anime.id ${cases} END)`, order);
                 }
 
                 break;
+            }
 
             // сортируем по дате добавления в список
             case 'user_created':
-                if (isAnimeQuery && dto.created?.length) {
-                    const { created, ids } = dto;
-                    const cases = ids
-                        .map((id, i) => `WHEN ${id} THEN '${created[i] ?? '1900-01-01'}'::timestamptz`)
+                if (userRates) {
+                    const cases = userRates
+                        .map(({ id, created = '1900-01-01' }) => `WHEN ${id} THEN '${created}'::timestamptz`)
                         .join(' ');
-
+    
                     qb.orderBy(`(CASE anime.id ${cases} END)`, order);
                 }
 
@@ -71,12 +72,11 @@ export class AnimesService {
 
             // сортируем по дате обновления в списоке
             case 'user_updated':
-                if (isAnimeQuery && dto.updated?.length) {
-                    const { updated, ids } = dto;
-                    const cases = ids
-                        .map((id, i) => `WHEN ${id} THEN '${updated[i] ?? '1900-01-01'}'::timestamptz`)
+                if (userRates) {
+                    const cases = userRates
+                        .map(({ id, updated = '1900-01-01' }) => `WHEN ${id} THEN '${updated}'::timestamptz`)
                         .join(' ');
-
+    
                     qb.orderBy(`(CASE anime.id ${cases} END)`, order);
                 }
 
@@ -129,8 +129,10 @@ export class AnimesService {
             this.addSortOrder(qb, dto);
         }
 
-        if ('ids' in dto && dto.ids?.length) {
-            qb.andWhere('anime.id IN (:...ids)', { ids: dto.ids });
+        if ('userRates' in dto && dto.userRates?.length) {
+            const ids = dto.userRates.map(({ id }) => id);
+
+            qb.andWhere('anime.id IN (:...ids)', { ids });
         }
 
         if (dto.genres?.length) {
@@ -147,16 +149,16 @@ export class AnimesService {
             );
         }
 
-        if (dto.kind) {
-            qb.andWhere('anime.kind = :kind', { kind: dto.kind });
+        if (dto.kind?.length) {
+            qb.andWhere('anime.kind IN (:...kind)', { kind: dto.kind });
+        }
+        
+        if (dto.status?.length) {
+            qb.andWhere('anime.status IN (:...status)', { status: dto.status });
         }
 
-        if (dto.status) {
-            qb.andWhere('anime.status = :status', { status: dto.status });
-        }
-
-        if (dto.ageRating) {
-            qb.andWhere('anime.rating = :ageRating', { ageRating: dto.ageRating });
+        if (dto.ageRating?.length) {
+            qb.andWhere('anime.rating IN (:...ageRating)', { ageRating: dto.ageRating });
         }
 
         if (dto.season) {

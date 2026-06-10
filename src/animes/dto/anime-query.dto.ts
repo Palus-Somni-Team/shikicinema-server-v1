@@ -3,62 +3,34 @@ import {
     IsArray,
     ArrayMaxSize,
     ArrayMinSize,
-    IsInt,
-    IsPositive,
     IsOptional,
-    IsNumber,
-    IsString,
     IsIn,
+    ValidateNested,
 } from 'class-validator';
 
 import { AnimeFiltersDto } from './anime-filters.dto';
+import { AnimeUserRateDto } from './anime-user-rate.dto';
 import type { AnimeQuerySortFieldsType } from '../types';
 import { ANIME_QUERY_SORT_FIELDS } from '../types/anime-query-sort-fields.type';
+import { Type } from 'class-transformer';
 
 export class AnimeQueryDto extends AnimeFiltersDto {
     @ApiProperty({
-        description: 'ID аниме для массовой фильтрации/сортировки',
-        type: [Number],
-        minItems: 1,
-        maxItems: 1000,
-        example: [8, 21, 223],
+        description: 'Аниме с пользовательскими данными для сортировки',
+        type: [Object],
+        required: true,
+        example: [
+            { id: 21, score: 9, created: '2019-10-17', updated: '2020-02-16' },
+            { id: 20, score: 8, created: '2019-10-22' },
+            { id: 1, score: 7 },
+        ],
     })
     @IsArray()
     @ArrayMinSize(1)
     @ArrayMaxSize(1000)
-    @IsInt({ each: true })
-    @IsPositive({ each: true })
-    ids!: number[];
-
-    @ApiProperty({
-        description: 'Оценки пользователя (из ids по индексу)',
-        type: [Number],
-        required: false,
-    })
-    @IsOptional()
-    @IsArray()
-    @IsNumber({}, { each: true })
-    scores?: number[];
-
-    @ApiProperty({
-        description: 'Даты добавления в список (из ids по индексу)',
-        type: [String],
-        required: false,
-    })
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    created?: string[];
-
-    @ApiProperty({
-        description: 'Даты обновления в списке (из ids по индексу)',
-        type: [String],
-        required: false,
-    })
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    updated?: string[];
+    @ValidateNested({ each: true })
+    @Type(() => AnimeUserRateDto)
+    userRates!: AnimeUserRateDto[];
 
     @ApiProperty({
         description: 'Поле для сортировки',
