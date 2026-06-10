@@ -1,5 +1,6 @@
 export enum AnimeKindEnum {
     ONA = 'ona',
+    OVA = 'ova',
     MOVIE = 'movie',
     MUSIC = 'music',
     PV = 'pv',
