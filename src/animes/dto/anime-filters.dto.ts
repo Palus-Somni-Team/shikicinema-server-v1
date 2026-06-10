@@ -212,4 +212,30 @@ export class AnimeFiltersDto {
     @IsOptional()
     @IsEnum(SortOrderEnum)
     order?: SortOrderEnum;
+
+    @ApiProperty({
+        description: 'Минимальная длительность эпизода в минутах',
+        type: Number,
+        required: false,
+        minimum: 0,
+        example: 20,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    @Type(() => Number)
+    durationMin?: number;
+
+    @ApiProperty({
+        description: 'Максимальная длительность эпизода в минутах',
+        type: Number,
+        required: false,
+        minimum: 1,
+        example: 30,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    @Type(() => Number)
+    durationMax?: number;
 }

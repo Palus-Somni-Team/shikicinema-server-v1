@@ -195,6 +195,14 @@ export class AnimesService {
             qb.andWhere('anime.score IS NOT NULL');
         }
 
+        if (dto.durationMin) {
+            qb.andWhere('anime.duration >= :durationMin', { durationMin: dto.durationMin });
+        }
+
+        if (dto.durationMax) {
+            qb.andWhere('anime.duration <= :durationMax', { durationMax: dto.durationMax });
+        }
+
         if ('offset' in dto) {
             qb.skip(dto.offset || 0);
         }
