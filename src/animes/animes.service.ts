@@ -137,15 +137,25 @@ export class AnimesService {
 
         if (dto.genres?.length) {
             qb.andWhere(
-                'anime.id IN (SELECT agen.anime_id FROM anime_genres agen WHERE agen.genre_id IN (:...genres))',
-                { genres: dto.genres }
+                `anime.id IN (
+                    SELECT agen.anime_id FROM anime_genres agen 
+                    WHERE agen.genre_id IN (:...genres) 
+                    GROUP BY agen.anime_id 
+                    HAVING COUNT(DISTINCT agen.genre_id) = :genresCount
+                )`,
+                { genres: dto.genres, genresCount: dto.genres.length }
             );
         }
 
         if (dto.studios?.length) {
             qb.andWhere(
-                'anime.id IN (SELECT asub.anime_id FROM anime_studios asub WHERE asub.studio_id IN (:...studios))',
-                { studios: dto.studios }
+                `anime.id IN (
+                    SELECT asub.anime_id FROM anime_studios asub 
+                    WHERE asub.studio_id IN (:...studios) 
+                    GROUP BY asub.anime_id 
+                    HAVING COUNT(DISTINCT asub.studio_id) = :studiosCount
+                )`,
+                { studios: dto.studios, studiosCount: dto.studios.length }
             );
         }
 
