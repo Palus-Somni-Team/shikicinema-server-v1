@@ -15,6 +15,7 @@ import { GenresModule } from './genres/genres.module';
 import { MailerModule } from './mailer/mailer.module';
 import { AlertModule } from './common/services/alert';
 import { MeilisearchModule } from './common/services/meilisearch';
+import { StudiosModule } from './studios/studios.module';
 
 @Module({
     imports: [
@@ -55,6 +56,7 @@ import { MeilisearchModule } from './common/services/meilisearch';
         MailerModule,
         AlertModule,
         MeilisearchModule,
+        StudiosModule,
     ],
 })
 export class AppModule {}

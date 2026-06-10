@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MeilisearchService } from './meilisearch.service';
-import { AnimeEntity } from '../../../entities';
+import { AnimeEntity, StudioEntity } from '../../../entities';
 
 @Global()
 @Module({
@@ -11,6 +11,7 @@ import { AnimeEntity } from '../../../entities';
         ConfigModule,
         TypeOrmModule.forFeature([
             AnimeEntity,
+            StudioEntity,
         ]),
     ],
     providers: [

@@ -4,19 +4,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Index, Meilisearch } from 'meilisearch';
 
-import { AnimeEntity } from '../../../entities';
-import { AnimeSearchDocument } from '../../types';
+import { AnimeEntity, StudioEntity } from '../../../entities';
+import { animeToSearchDoc, studioToSearchDoc } from './utils';
 
 @Injectable()
 export class MeilisearchService implements OnModuleInit {
     private readonly logger = new Logger('Meilisearch');
 
     private client!: Meilisearch;
-    private index!: Index;
+    private animesIndex!: Index;
+    private studiosIndex!: Index;
 
     constructor(
         @InjectRepository(AnimeEntity)
         private readonly animeRepo: Repository<AnimeEntity>,
+
+        @InjectRepository(StudioEntity)
+        private readonly studioRepo: Repository<StudioEntity>,
 
         private readonly config: ConfigService,
     ) {}
@@ -26,12 +30,13 @@ export class MeilisearchService implements OnModuleInit {
         const apiKey = this.config.getOrThrow<string>('SHIKICINEMA_API_V1_MEILISEARCH_KEY');
 
         this.client = new Meilisearch({ host, apiKey });
-        this.index = this.client.index('anime');
+        this.animesIndex = this.client.index('anime');
+        this.studiosIndex = this.client.index('studios');
 
         try {
             await this.client.health();
 
-            await this.index.updateSettings({
+            await this.animesIndex.updateSettings({
                 searchableAttributes: ['titles.ru', 'titles.en', 'titles.ja'],
                 rankingRules: [
                     'words',
@@ -45,11 +50,18 @@ export class MeilisearchService implements OnModuleInit {
             });
 
             // Первичная индексация, если индекс пустой
-            const stats = await this.index.getStats();
+            const stats = await this.animesIndex.getStats();
 
             if (stats.numberOfDocuments === 0) {
-                this.logger.log('Empty index, starting full reindex');
+                this.logger.log('Empty animes index, starting full reindex');
                 await this.indexAllAnimes();
+            }
+
+            const studioStats = await this.studiosIndex.getStats();
+
+            if (studioStats.numberOfDocuments === 0) {
+                this.logger.log('Empty studios index, starting full reindex');
+                await this.indexAllStudios();
             }
 
             this.logger.log('Connected to Meilisearch');
@@ -58,8 +70,8 @@ export class MeilisearchService implements OnModuleInit {
         }
     }
 
-    async search(query: string, limit = 50): Promise<number[]> {
-        const { hits } = await this.index.search(query, {
+    async searchAnimes(query: string, limit = 50): Promise<number[]> {
+        const { hits } = await this.animesIndex.search(query, {
             attributesToRetrieve: ['id'],
             sort: ['score:desc', 'id:asc'],
             limit,
@@ -82,9 +94,9 @@ export class MeilisearchService implements OnModuleInit {
             });
 
             if (animes.length > 0) {
-                const docs = animes.map(a => this.toSearchDocument(a));
+                const docs = animes.map(animeToSearchDoc);
 
-                await this.index.addDocuments(docs, { primaryKey: 'id' });
+                await this.animesIndex.addDocuments(docs, { primaryKey: 'id' });
 
                 offset += animes.length;
 
@@ -95,21 +107,22 @@ export class MeilisearchService implements OnModuleInit {
         this.logger.log(`Indexed total ${offset} animes`);
     }
 
-    private toSearchDocument(anime: AnimeEntity): AnimeSearchDocument {
-        const titles: Record<string, string[]> = {};
+    async searchStudios(query: string, limit = 50, offset = 0): Promise<number[]> {
+        const { hits } = await this.studiosIndex.search(query, {
+            attributesToRetrieve: ['id'],
+            limit,
+            offset,
+        });
 
-        for (const { language, title } of (anime.titles ?? [])) {
-            if (!titles[language]) {
-                titles[language] = [];
-            }
+        return hits.map(h => h.id as number);
+    }
 
-            titles[language].push(title);
-        }
+    async indexAllStudios(): Promise<void> {
+        const studios = await this.studioRepo.find();
+        const docs = studios.map(studioToSearchDoc);
 
-        return {
-            id: anime.id,
-            titles,
-            score: anime.score,
-        };
+        await this.studiosIndex.addDocuments(docs, { primaryKey: 'id' });
+
+        this.logger.log(`Indexed ${docs.length} studios`);
     }
 }

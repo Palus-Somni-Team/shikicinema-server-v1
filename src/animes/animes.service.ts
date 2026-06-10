@@ -111,7 +111,7 @@ export class AnimesService {
         if ('name' in dto && dto.name) {
             const limit = 'limit' in dto ? toLimit(dto.limit) : 50;
 
-            const animeIds = await this.meilisearch.search(dto.name, limit);
+            const animeIds = await this.meilisearch.searchAnimes(dto.name, limit);
 
             if (animeIds.length === 0) {
                 return [];

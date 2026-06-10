@@ -120,6 +120,7 @@ export class AnimeSyncService implements OnModuleInit {
 
             // обновляем индексы для meilisearch
             await this.meilisearch.indexAllAnimes();
+            await this.meilisearch.indexAllStudios();
 
             this.logger.log(`Sync completed. Total synced: ${totalSynced}`);
         } catch (err) {
