@@ -60,7 +60,7 @@ export class AnimeFiltersDto {
     @IsOptional()
     @IsArray()
     @IsEnum(AnimeKindEnum, { each: true })
-    kind?: AnimeKindEnum[];
+    kinds?: AnimeKindEnum[];
 
     @ApiProperty({
         description: 'Статусы выхода',
@@ -72,19 +72,19 @@ export class AnimeFiltersDto {
     @IsOptional()
     @IsArray()
     @IsEnum(AnimeStatusEnum, { each: true })
-    status?: AnimeStatusEnum[];
+    statuses?: AnimeStatusEnum[];
 
     @ApiProperty({
         description: 'Возрастные рейтинги',
         enum: AgeRatingEnum,
         isArray: true,
         required: false,
-        example: [AgeRatingEnum.PG13, AgeRatingEnum.R],
+        example: [AgeRatingEnum.G, AgeRatingEnum.PG13],
     })
     @IsOptional()
     @IsArray()
     @IsEnum(AgeRatingEnum, { each: true })
-    ageRating?: AgeRatingEnum[];
+    ageRatings?: AgeRatingEnum[];
 
     @ApiProperty({
         description: 'Сезон',

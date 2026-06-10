@@ -149,16 +149,16 @@ export class AnimesService {
             );
         }
 
-        if (dto.kind?.length) {
-            qb.andWhere('anime.kind IN (:...kind)', { kind: dto.kind });
+        if (dto.kinds?.length) {
+            qb.andWhere('anime.kind IN (:...kind)', { kind: dto.kinds });
         }
         
-        if (dto.status?.length) {
-            qb.andWhere('anime.status IN (:...status)', { status: dto.status });
+        if (dto.statuses?.length) {
+            qb.andWhere('anime.status IN (:...status)', { status: dto.statuses });
         }
 
-        if (dto.ageRating?.length) {
-            qb.andWhere('anime.rating IN (:...ageRating)', { ageRating: dto.ageRating });
+        if (dto.ageRatings?.length) {
+            qb.andWhere('anime.rating IN (:...ageRating)', { ageRating: dto.ageRatings });
         }
 
         if (dto.season) {
