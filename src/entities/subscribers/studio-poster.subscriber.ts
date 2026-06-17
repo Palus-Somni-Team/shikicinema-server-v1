@@ -8,8 +8,9 @@ import { access, constants } from 'fs/promises';
 import { StudioEntity } from '../studio.entity';
 
 @EventSubscriber()
-export class StudioPosterSubscriber implements EntitySubscriberInterface<StudioEntity> {
+export class StudioPosterSubscriber implements EntitySubscriberInterface<StudioEntity> { 
     private readonly staticDir = process.env.SHIKICINEMA_API_V1_STATIC_DIR || '/var/www/static';
+    private readonly shikicinemaDomain = process.env.SHIKICINEMA_API_V1_DOMAIN || '/';
     private readonly cache = new Map<number, string | null>();
 
     listenTo() {
@@ -23,7 +24,7 @@ export class StudioPosterSubscriber implements EntitySubscriberInterface<StudioE
             const filePath = path.join(this.staticDir, 'studios', `${entity.id}.jpeg`);
 
             try {
-                const poster = `/static/studios/${entity.id}.jpeg`;
+                const poster = `${this.shikicinemaDomain}static/studios/${entity.id}.jpeg`;
 
                 await access(filePath, constants.R_OK);
 

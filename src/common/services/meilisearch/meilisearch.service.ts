@@ -49,6 +49,20 @@ export class MeilisearchService implements OnModuleInit {
                 sortableAttributes: ['score', 'id'],
             });
 
+            await this.studiosIndex.updateSettings({
+                searchableAttributes: ['name', 'russian'],
+                displayedAttributes: ['id', 'name', 'russian', 'poster'],
+                rankingRules: [
+                    'words',
+                    'typo',
+                    'exactness',
+                    'attribute',
+                    'proximity',
+                    'sort',
+                ],
+                sortableAttributes: ['name', 'id'],
+            });
+
             // Первичная индексация, если индекс пустой
             const stats = await this.animesIndex.getStats();
 

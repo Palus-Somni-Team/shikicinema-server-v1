@@ -15,6 +15,10 @@ export class StudioEntity {
     @ApiProperty({ description: 'Название студии', example: 'Toei Animation' })
     name: string;
 
+    @Exclude()
+    @Column({ type: 'varchar', length: 256, nullable: true })
+    russian: string | null;
+
     @Expose()
     @ApiProperty({
         description: 'Логотип студии',
@@ -23,8 +27,9 @@ export class StudioEntity {
     })
     poster!: string | null;
 
-    constructor(id: number, name: string) {
+    constructor(id: number, name: string, russian = null) {
         this.id = id;
         this.name = name;
+        this.russian = russian;
     }
 }
