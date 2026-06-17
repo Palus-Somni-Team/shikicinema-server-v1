@@ -125,7 +125,8 @@ export class AnimeEntity {
         },
     })
     get poster() {
-        const base = `/static/animes/${this.id}`;
+        const domain = process.env.SHIKICINEMA_API_V1_DOMAIN || '/';
+        const base = `${domain}static/animes/${this.id}`;
 
         return {
             avif: `${base}.avif`,

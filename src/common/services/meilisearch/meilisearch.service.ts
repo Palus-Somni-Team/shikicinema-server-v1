@@ -38,6 +38,7 @@ export class MeilisearchService implements OnModuleInit {
 
             await this.animesIndex.updateSettings({
                 searchableAttributes: ['titles.ru', 'titles.en', 'titles.ja'],
+                displayedAttributes: ['id', 'titles', 'score', 'poster'],
                 rankingRules: [
                     'words',
                     'typo',

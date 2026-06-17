@@ -16,5 +16,6 @@ export function animeToSearchDoc(anime: AnimeEntity): AnimeSearchDocument {
         id: anime.id,
         titles,
         score: anime.score,
+        poster: anime.poster.jpeg,
     };
 }
