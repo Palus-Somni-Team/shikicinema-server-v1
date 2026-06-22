@@ -48,11 +48,17 @@ export class AnimesService {
             // сортируем по рейтингу пользователя
             case 'user_score': {
                 if (userRates) {
-                    const cases = userRates
-                        .map(({ id, score }) => `WHEN ${id} THEN ${score}`)
-                        .join(' ');
-    
+                    const cases = userRates.map(({ id, score = 0 }) => `WHEN ${id} THEN ${score}`).join(' ');
+
                     qb.orderBy(`(CASE anime.id ${cases} END)`, order);
+
+                    qb.addSelect(
+                        `(SELECT t.title FROM anime_titles t WHERE t.anime_id = anime.id AND t.language = 'en' ORDER BY t.priority ASC LIMIT 1)`,
+                        'name_sort',
+                    );
+                    qb.addOrderBy('name_sort', 'ASC');
+
+                    qb.addOrderBy('anime.id', 'ASC');
                 }
 
                 break;

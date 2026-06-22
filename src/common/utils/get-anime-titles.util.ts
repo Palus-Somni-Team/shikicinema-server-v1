@@ -12,16 +12,16 @@ export function getAnimeTitles(anime: ShikimoriAnime): AnimeTitleEntity[] {
         titles.push(new AnimeTitleEntity(animeId, anime.russian, 'ru'));
     }
 
+    if (anime.name) {
+        titles.push(new AnimeTitleEntity(animeId, anime.name, 'en'));
+    }
+
     if (anime.licenseNameRu) {
         titles.push(new AnimeTitleEntity(animeId, anime.licenseNameRu, 'ru', 1));
     }
 
     if (anime.english) {
-        titles.push(new AnimeTitleEntity(animeId, anime.english, 'en'));
-    }
-
-    if (anime.name) {
-        titles.push(new AnimeTitleEntity(animeId, anime.name, 'en', 1));
+        titles.push(new AnimeTitleEntity(animeId, anime.english, 'en', 1));
     }
 
     if (anime.japanese) {
