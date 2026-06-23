@@ -8,6 +8,8 @@ export async function addGlobal(app: NestExpressApplication) {
 
     app.set('query parser', 'extended');
 
+    app.useBodyParser('json', { limit: '1mb' });
+
     app.getHttpAdapter()
         .getInstance()
         .set('trust proxy', 1);
