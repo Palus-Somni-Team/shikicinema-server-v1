@@ -17,6 +17,7 @@ export function toAnimeEntity(anime: ShikimoriAnime, existing?: AnimeEntity | nu
     if (anime.status) entity.status = status;
     if (anime.duration) entity.duration = anime.duration;
     if (anime.description) entity.description = anime.description;
+    if (anime.episodes) entity.episodesTotal = anime.episodes;
     if (anime.airedOn?.date) entity.airedOn = new Date(anime.airedOn.date);
     if (anime.nextEpisodeAt) entity.nextEpisodeAt = new Date(anime.nextEpisodeAt);
     if (anime.releasedOn?.date) entity.releasedOn = new Date(anime.releasedOn.date);

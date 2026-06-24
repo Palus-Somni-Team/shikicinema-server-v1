@@ -8,6 +8,7 @@ import {
     JoinColumn,
     ManyToMany,
     JoinTable,
+    VirtualColumn,
 } from 'typeorm';
 import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -78,6 +79,18 @@ export class AnimeEntity {
     @ApiProperty({ description: 'Описание на русском', type: String })
     description: string | null;
 
+    @Expose({ name: 'episodes_total' })
+    @Column({ type: 'int', nullable: true, name: 'episodes_total' })
+    episodesTotal: number | null;
+
+    // TODO: если когда-то ShikiVideos переименуется, исправить!
+    @Expose({ name: 'episodes_aired' })
+    @VirtualColumn({
+        type: 'int',
+        query: (alias) => `SELECT COUNT(DISTINCT episode)::int FROM "ShikiVideos" videos WHERE videos.anime_id = ${alias}.id`,
+    })
+    episodesAired!: number;
+
     @Expose()
     @ManyToMany(() => StudioEntity)
     @JoinTable({
@@ -147,6 +160,7 @@ export class AnimeEntity {
         releasedOn: Date | null = null,
         nextEpisodeAt: Date | null = null,
         description: string | null = null,
+        episodesTotal: number | null = null,
         tags: string[] = [],
     ) {
         this.id = id;
@@ -159,6 +173,7 @@ export class AnimeEntity {
         this.releasedOn = releasedOn;
         this.nextEpisodeAt = nextEpisodeAt;
         this.description = description;
+        this.episodesTotal = episodesTotal;
         this.tags = tags;
     }
 }

@@ -19,6 +19,8 @@ export interface ShikimoriAnime {
     status: string | null;
     duration: number | null;
     description: string | null;
+    episodes: number;
+    episodesAired: number;
     url: string | null;
     airedOn: ShikimoriDate | null;
     releasedOn: ShikimoriDate | null;
