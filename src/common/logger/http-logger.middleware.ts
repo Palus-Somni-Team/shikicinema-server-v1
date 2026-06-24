@@ -52,7 +52,7 @@ export class HttpLoggerMiddleware implements NestMiddleware {
 
             if (status >= 500) {
                 this.logger.error(log);
-            } else if (status >= 400 || durationMs > 200 || this.isVerbose) {
+            } else if (status >= 400 || durationMs > 500 || this.isVerbose) {
                 this.logger.warn(log);
             } else {
                 this.logger.log(log);
