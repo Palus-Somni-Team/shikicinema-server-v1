@@ -81,14 +81,11 @@ export class AnimeEntity {
 
     @Expose({ name: 'episodes_total' })
     @Column({ type: 'int', nullable: true, name: 'episodes_total' })
+    @ApiProperty({ description: 'Количество эпизодов', example: 12 })
     episodesTotal: number | null;
 
-    // TODO: если когда-то ShikiVideos переименуется, исправить!
     @Expose({ name: 'episodes_aired' })
-    @VirtualColumn({
-        type: 'int',
-        query: (alias) => `SELECT COUNT(DISTINCT episode)::int FROM "ShikiVideos" videos WHERE videos.anime_id = ${alias}.id`,
-    })
+    @ApiProperty({ description: 'Количество эпизодов с загруженными сериями (поле доступно только в поиске по id)' })
     episodesAired!: number;
 
     @Expose()

@@ -95,10 +95,17 @@ export class AnimesService {
     }
 
     async findById(id: number): Promise<AnimeEntity | null> {
-        return this.animeRepo.findOneOrFail({
-            where: { id },
-            relations: { titles: true, genres: true, studios: true },
-        });
+        return this.animeRepo.createQueryBuilder('anime')
+            .leftJoinAndSelect('anime.titles', 'title')
+            .leftJoinAndSelect('anime.genres', 'genre')
+            .leftJoinAndSelect('anime.studios', 'studio')
+            .addSelect(
+                // TODO: если когда-то ShikiVideos переименуется, исправить!
+                `(SELECT COUNT(DISTINCT episode)::int FROM "ShikiVideos" WHERE anime_id = :id)`,
+                'episodes_aired',
+            )
+            .where('anime.id = :id', { id })
+            .getOneOrFail();
     }
 
     async findTitlesById(id: number, language?: LanguageCode): Promise<AnimeTitleEntity[]> {
