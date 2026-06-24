@@ -3,8 +3,12 @@ import { Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+import { EntityNotFoundFilter, UnhandledExceptionsFilter } from './common/filters';
+import { AlertService } from './common/services/alert';
+
 export async function addGlobal(app: NestExpressApplication) {
     const swaggerTitle = 'Shikicinema API v1';
+    const alertService = app.get(AlertService);
 
     app.set('query parser', 'extended');
 
@@ -19,6 +23,11 @@ export async function addGlobal(app: NestExpressApplication) {
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     });
+
+    app.useGlobalFilters(
+        new UnhandledExceptionsFilter(alertService),
+        new EntityNotFoundFilter(),
+    );
 
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.useGlobalInterceptors(

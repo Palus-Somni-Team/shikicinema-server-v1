@@ -95,7 +95,7 @@ export class AnimesService {
     }
 
     async findById(id: number): Promise<AnimeEntity | null> {
-        return this.animeRepo.findOne({
+        return this.animeRepo.findOneOrFail({
             where: { id },
             relations: { titles: true, genres: true, studios: true },
         });
