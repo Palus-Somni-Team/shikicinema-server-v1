@@ -85,6 +85,12 @@ export class AnimeEntity {
     episodesTotal: number | null;
 
     @Expose({ name: 'episodes_aired' })
+    @VirtualColumn({
+        type: 'int',
+        select: false,
+        // TODO: если когда-то ShikiVideos переименуется, исправить!
+        query: (alias) => `(SELECT COUNT(DISTINCT episode)::int FROM "ShikiVideos" WHERE anime_id = ${alias}.id)`,
+    })
     @ApiProperty({ description: 'Количество эпизодов с загруженными сериями (поле доступно только в поиске по id)' })
     episodesAired!: number;
 

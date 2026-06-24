@@ -99,11 +99,7 @@ export class AnimesService {
             .leftJoinAndSelect('anime.titles', 'title')
             .leftJoinAndSelect('anime.genres', 'genre')
             .leftJoinAndSelect('anime.studios', 'studio')
-            .addSelect(
-                // TODO: если когда-то ShikiVideos переименуется, исправить!
-                `(SELECT COUNT(DISTINCT episode)::int FROM "ShikiVideos" WHERE anime_id = :id)`,
-                'episodes_aired',
-            )
+            .addSelect('anime.episodesAired')
             .where('anime.id = :id', { id })
             .getOneOrFail();
     }
