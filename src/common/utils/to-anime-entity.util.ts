@@ -13,7 +13,6 @@ export function toAnimeEntity(anime: ShikimoriAnime, existing?: AnimeEntity | nu
     // обновляем поля, которые пришли от shikimori не пустыми
     if (anime.kind) entity.kind = anime.kind as AnimeKindEnum;
     if (anime.score) entity.score = anime.score;
-    if (anime.rating) entity.rating = anime.rating as AgeRatingEnum;
     if (anime.status) entity.status = status;
     if (anime.duration) entity.duration = anime.duration;
     if (anime.description) entity.description = anime.description;
@@ -21,6 +20,12 @@ export function toAnimeEntity(anime: ShikimoriAnime, existing?: AnimeEntity | nu
     if (anime.airedOn?.date) entity.airedOn = new Date(anime.airedOn.date);
     if (anime.nextEpisodeAt) entity.nextEpisodeAt = new Date(anime.nextEpisodeAt);
     if (anime.releasedOn?.date) entity.releasedOn = new Date(anime.releasedOn.date);
+
+    if (anime.rating) {
+        entity.rating = anime.rating === 'none'
+            ? entity.rating ?? null
+            : anime.rating as AgeRatingEnum;
+    }
 
     // TODO: добавить пользовательские тэги
 

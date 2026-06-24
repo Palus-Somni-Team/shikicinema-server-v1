@@ -35,22 +35,22 @@ export class AnimeEntity {
     tags: string[];
 
     @Expose()
-    @Column({ type: 'varchar', length: 32, nullable: true, enum: AnimeKindEnum })
+    @Column({ type: 'enum', enum: AnimeKindEnum, nullable: true })
     @ApiProperty({ example: AnimeKindEnum.TV_SPECIAL, enum: AnimeKindEnum })
     kind: AnimeKindEnum | null;
 
     @Expose()
-    @Column({ type: 'varchar', length: 16, nullable: true, enum: AgeRatingEnum })
+    @Column({ type: 'enum', enum: AgeRatingEnum, nullable: true })
     @ApiProperty({ example: AgeRatingEnum.PG13, enum: AgeRatingEnum })
     rating: AgeRatingEnum | null;
 
     @Expose()
-    @Column({ type: 'float', nullable: true })
+    @Column({ type: 'real', nullable: true })
     @ApiProperty({ example: 8.5 })
     score: number | null;
 
     @Expose()
-    @Column({ type: 'varchar', length: 32, enum: AnimeStatusEnum })
+    @Column({ type: 'enum', enum: AnimeStatusEnum, nullable: true })
     @ApiProperty({ example: 'released', enum: AnimeStatusEnum  })
     status: AnimeStatusEnum;
 

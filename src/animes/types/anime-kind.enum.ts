@@ -8,5 +8,4 @@ export enum AnimeKindEnum {
     TV = 'tv',
     TV_SPECIAL = 'tv_special',
     SPECIAL = 'special',
-    UNKNOWN = 'unknown',
 }
