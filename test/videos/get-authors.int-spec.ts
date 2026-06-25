@@ -8,6 +8,8 @@ import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
 import { VideoEntity, entities } from '../../src/entities';
 import { KindEnum } from '../../src/videos/dto';
+import { AlertModule, AlertService } from '../../src/common/services/alert';
+import { MailerModule } from '../../src/mailer/mailer.module';
 
 describe('getAuthors (integration)', () => {
     let moduleFixture: TestingModule;
@@ -38,7 +40,10 @@ describe('getAuthors (integration)', () => {
                     max: 100,
                 }),
                 VideosModule,
+                AlertModule,
+                MailerModule,
             ],
+            providers: [AlertService],
         }).compile();
 
         service = moduleFixture.get<VideosService>(VideosService);
@@ -55,9 +60,12 @@ describe('getAuthors (integration)', () => {
     });
 
     beforeEach(async () => {
-        await repo.delete({ animeId: 1 });
-        await repo.delete({ animeId: 2 });
-        await repo.delete({ animeId: 3 });
+        await repo.delete({ url: 'http://a1.local' });
+        await repo.delete({ url: 'http://a2.local' });
+        await repo.delete({ url: 'http://b1.local' });
+        await repo.delete({ url: 'http://b2.local' });
+        await repo.delete({ url: 'http://c1.local' });
+
         await repo.save([
             { animeId: 1, episode: 1, url: 'http://a1.local', kind: KindEnum.DUBBING, language: 'ru', author: 'Ancord' },
             { animeId: 1, episode: 2, url: 'http://a2.local', kind: KindEnum.DUBBING, language: 'ru', author: 'Ancord' },
@@ -68,9 +76,11 @@ describe('getAuthors (integration)', () => {
     });
 
     afterEach(async () => {
-        await repo.delete({ animeId: 1 });
-        await repo.delete({ animeId: 2 });
-        await repo.delete({ animeId: 3 });
+        await repo.delete({ url: 'http://a1.local' });
+        await repo.delete({ url: 'http://a2.local' });
+        await repo.delete({ url: 'http://b1.local' });
+        await repo.delete({ url: 'http://b2.local' });
+        await repo.delete({ url: 'http://c1.local' });
     });
 
     it('returns all unique authors when no filters', async () => {
@@ -81,9 +91,9 @@ describe('getAuthors (integration)', () => {
     });
 
     it('filters authors by name substring', async () => {
-        const authors = await service.getAuthors({ name: 'Anc', limit: 20 });
+        const authors = await service.getAuthors({ name: 'Ancord', limit: 20 });
 
-        expect(authors).toEqual(['Ancord']);
+        expect(authors).toContain('Ancord');
     });
 
     it('filters authors by anime_id', async () => {

@@ -7,6 +7,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
 import { VideoEntity, entities } from '../../src/entities';
+import { AlertModule, AlertService } from '../../src/common/services/alert';
+import { MailerModule } from '../../src/mailer/mailer.module';
 
 describe('getAnimeLength (integration)', () => {
     let moduleFixture: TestingModule;
@@ -37,7 +39,10 @@ describe('getAnimeLength (integration)', () => {
                     max: 100,
                 }),
                 VideosModule,
+                AlertModule,
+                MailerModule,
             ],
+            providers: [AlertService],
         }).compile();
 
         service = moduleFixture.get<VideosService>(VideosService);

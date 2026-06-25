@@ -1,17 +1,18 @@
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NestApplication } from '@nestjs/core';
 import { Server } from 'http';
 import { CacheModule } from '@nestjs/cache-manager';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { VideosModule, VideosService } from '../../src/videos';
 import { AccessTokenEntity, AnimeEntity, AnimeTitleEntity, UserEntity, VideoEntity } from '../../src/entities';
 import { addGlobal } from '../../src/add-global';
+import { AlertService } from '../../src/common/services/alert';
 
 
 describe('GET /shikivideos/contributions', () => {
-    let app: NestApplication;
+    let app: NestExpressApplication;
     let http: Server;
     let service: VideosService;
 
@@ -20,6 +21,9 @@ describe('GET /shikivideos/contributions', () => {
             imports: [
                 VideosModule,
                 CacheModule.register({ isGlobal: true, ttl: 0, max: 0 }),
+            ],
+            providers: [
+                { provide: AlertService, useValue: {}, },
             ],
         })
             .overrideProvider(getRepositoryToken(AnimeEntity))

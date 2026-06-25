@@ -1,15 +1,18 @@
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { Server } from 'http';
-import { HttpException, INestApplication, UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { VideosService, VideosModule } from '../../src/videos';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { addGlobal } from '../../src/add-global';
 import { UploadTokenGuard } from '../../src/common/guards/upload-token.guard';
 import { AccessTokenEntity, AnimeEntity, AnimeTitleEntity, UserEntity, VideoEntity } from '../../src/entities';
+import { AlertService } from '../../src/common/services/alert';
+import { DuplicateUrlException } from '../../src/domain';
 
 describe('POST /shikivideos', () => {
     const animeId = 123;
@@ -23,7 +26,7 @@ describe('POST /shikivideos', () => {
     const animeRussian = 'Тестовое Аниме';
     const uploaderId = '12345';
 
-    let app: INestApplication;
+    let app: NestExpressApplication;
     let http: Server;
     let service: VideosService;
 
@@ -32,6 +35,9 @@ describe('POST /shikivideos', () => {
             imports: [
                 VideosModule,
                 CacheModule.register({ isGlobal: true, ttl: 0, max: 0 }),
+            ],
+            providers: [
+                { provide: AlertService, useValue: {}, },
             ],
         })
             .overrideProvider(getRepositoryToken(AnimeEntity))
@@ -117,7 +123,7 @@ describe('POST /shikivideos', () => {
     it('Returns 400 when URL already exists', async () => {
         const spy = jest.spyOn(service, 'createVideo');
         spy.mockRejectedValueOnce(
-            new HttpException('Record with this url already exists', 400),
+            new DuplicateUrlException(url)
         );
 
         const { statusCode, body } = await request(http)
@@ -132,11 +138,7 @@ describe('POST /shikivideos', () => {
             });
 
         expect(statusCode).toBe(400);
-        expect(body).toEqual(
-            expect.objectContaining({
-                message: 'Record with this url already exists',
-            }),
-        );
+        expect(body).toEqual(`Record with this url already exists: ${url}`);
     });
 
     it('Returns 400 when required fields are missing', async () => {

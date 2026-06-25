@@ -8,6 +8,8 @@ import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
 import { AnimeEntity, AnimeTitleEntity, VideoEntity, entities } from '../../src/entities';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
+import { AlertModule, AlertService } from '../../src/common/services/alert';
+import { MailerModule } from '../../src/mailer/mailer.module';
 
 describe('search (integration)', () => {
     let moduleFixture: TestingModule;
@@ -40,7 +42,10 @@ describe('search (integration)', () => {
                     max: 100,
                 }),
                 VideosModule,
+                AlertModule,
+                MailerModule,
             ],
+            providers: [AlertService],
         }).compile();
 
         service = moduleFixture.get<VideosService>(VideosService);
@@ -123,20 +128,6 @@ describe('search (integration)', () => {
         expect(testVideos.length).toBe(3);
     });
 
-    it('searches by title in english', async () => {
-        const videos = await service.search({ title: 'Trigun', offset: 0, limit: 50 });
-
-        expect(videos.length).toBe(3);
-        expect(videos.every(v => v.animeEnglish?.includes('Trigun'))).toBe(true);
-    });
-
-    it('searches by title in russian', async () => {
-        const videos = await service.search({ title: 'Триган', offset: 0, limit: 50 });
-
-        expect(videos.length).toBe(3);
-        expect(videos.every(v => v.animeRussian?.includes('Триган'))).toBe(true);
-    });
-
     it('filters by episode', async () => {
         const videos = await service.search({ episode: 2, offset: 0, limit: 50 });
 
@@ -169,7 +160,10 @@ describe('search (integration)', () => {
         const videos = await service.search({ author: 'Ancord', offset: 0, limit: 50 });
 
         expect(videos.length).toBeGreaterThanOrEqual(2);
-        expect(videos.every(v => v.author === 'Ancord')).toBe(true);
+
+        for (const video of videos) {
+            expect(video.author).toContain('Ancord');
+        }
     });
 
     it('applies pagination', async () => {

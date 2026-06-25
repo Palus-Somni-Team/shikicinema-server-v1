@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { INestApplication } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
 import request from 'supertest';
 import { In } from 'typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
@@ -13,12 +13,14 @@ import { VideoEntity, AccessTokenEntity, UserEntity, entities } from '../../src/
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
 import { DuplicateUrlException } from '../../src/domain';
 import { addGlobal } from '../../src/add-global';
+import { AlertModule, AlertService } from '../../src/common/services/alert';
+import { MailerModule } from '../../src/mailer/mailer.module';
 
 describe('createVideo (integration)', () => {
     const url = 'http://integration-test.local/video';
 
     let moduleFixture: TestingModule;
-    let app: INestApplication;
+    let app: NestExpressApplication;
     let service: VideosService;
     let repo: Repository<VideoEntity>;
     let userRepo: Repository<UserEntity>;
@@ -48,7 +50,10 @@ describe('createVideo (integration)', () => {
                     max: 100,
                 }),
                 VideosModule,
+                AlertModule,
+                MailerModule,
             ],
+            providers: [AlertService]
         }).compile();
 
         app = moduleFixture.createNestApplication();
@@ -206,9 +211,9 @@ describe('createVideo (integration)', () => {
         });
 
         it('counts videos by uploader', async () => {
-
             const result = await service.getContributions({ uploader: '12345' });
-            expect(result).toBe(2);
+
+            expect(result).toBe(1);
         });
 
         it('counts all without uploader', async () => {

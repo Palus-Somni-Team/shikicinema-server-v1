@@ -8,6 +8,8 @@ import { VideosModule } from '../../src/videos/videos.module';
 import { VideosService } from '../../src/videos/videos.service';
 import { VideoEntity, entities } from '../../src/entities';
 import { KindEnum, QualityEnum } from '../../src/videos/dto';
+import { AlertModule, AlertService } from '../../src/common/services/alert';
+import { MailerModule } from '../../src/mailer/mailer.module';
 
 describe('getByAnimeId (integration)', () => {
     let moduleFixture: TestingModule;
@@ -38,7 +40,10 @@ describe('getByAnimeId (integration)', () => {
                     max: 100,
                 }),
                 VideosModule,
+                AlertModule,
+                MailerModule,
             ],
+            providers: [AlertService],
         }).compile();
 
         service = moduleFixture.get<VideosService>(VideosService);

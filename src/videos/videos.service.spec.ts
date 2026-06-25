@@ -7,6 +7,7 @@ import { VideosService } from './videos.service';
 import { VideoEntity } from '../entities';
 import { KindEnum, QualityEnum } from './dto';
 import { DuplicateUrlException } from '../domain';
+import { AlertService } from '../common/services/alert';
 
 describe('VideosService', () => {
     let service: VideosService;
@@ -19,6 +20,7 @@ describe('VideosService', () => {
             providers: [
                 VideosService,
                 { provide: getRepositoryToken(VideoEntity), useValue: videoRepo },
+                { provide: AlertService, useValue: jest.fn },
             ],
         }).compile();
 
@@ -288,7 +290,7 @@ describe('VideosService', () => {
             await service.search({ title: 'Trigun', offset: 0, limit: 50 });
 
             expect(qb.andWhere).toHaveBeenCalledWith(
-                'title_rel.title ILIKE :title',
+                'video.animeId IN (SELECT at.anime_id FROM anime_titles at WHERE at.title ILIKE :title)',
                 { title: '%Trigun%' },
             );
         });
