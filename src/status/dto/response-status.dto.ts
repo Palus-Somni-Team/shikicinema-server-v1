@@ -9,10 +9,10 @@ export class ResponseStatusDto {
     @Expose()
     @IsEnum(StatusEnum)
     @ApiProperty({ enum: StatusEnum, example: StatusEnum.ONLINE })
-    server: StatusEnum;
+    server!: StatusEnum;
 
     @Expose()
     @IsEnum(StatusEnum)
     @ApiProperty({ enum: StatusEnum, example: StatusEnum.ONLINE })
-    api: StatusEnum;
+    api!: StatusEnum;
 }

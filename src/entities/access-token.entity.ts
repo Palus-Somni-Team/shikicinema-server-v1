@@ -6,21 +6,21 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 export class AccessTokenEntity {
     @PrimaryColumn({ type: 'varchar', length: 255 })
     @Expose()
-    token: string;
+    token!: string;
 
     @Column({ type: 'varchar', length: 255, name: 'user_id' })
     @Expose({ name: 'user_id' })
-    userId: string;
+    userId!: string;
 
     @Column({ type: 'varchar', length: 255, name: 'client_id' })
     @Expose({ name: 'client_id' })
-    clientId: string;
+    clientId!: string;
 
     @Column({ type: 'varchar', length: 255, array: true })
     @Expose()
-    scopes: string[];
+    scopes!: string[];
 
     @Column({ type: 'timestamp with time zone' })
     @Expose()
-    expires: Date;
+    expires!: Date;
 }

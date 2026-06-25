@@ -10,5 +10,5 @@ export class GetByAnimeIdDto {
     @IsPositive()
     @Type(() => Number)
     @ApiProperty({ example: 21, type: 'integer' })
-    animeId: number;
+    animeId!: number;
 }

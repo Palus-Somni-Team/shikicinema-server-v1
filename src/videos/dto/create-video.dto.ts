@@ -16,28 +16,28 @@ export class CreateVideoDto {
     @IsString()
     @MaxLength(2048)
     @ApiProperty({ example: 'https://youtube.com/embed/dQw4w9WgXcQ', type: 'string' })
-    url: string;
+    url!: string;
 
     @Expose({ name: 'anime_id' })
     @IsInt()
     @IsPositive()
     @Type(() => Number)
     @ApiProperty({ example: 21, type: 'integer' })
-    animeId: number;
+    animeId!: number;
 
     @IsInt()
     @IsPositive()
     @Type(() => Number)
     @ApiProperty({ example: 666, type: 'integer' })
-    episode: number;
+    episode!: number;
 
     @IsEnum(KindEnum)
     @ApiProperty({ example: KindEnum.SUBTITLES, enum: KindEnum })
-    kind: KindEnum;
+    kind!: KindEnum;
 
     @IsString()
     @ApiProperty({ example: 'ua', type: 'string' })
-    language: string;
+    language!: string;
 
     @IsString()
     @IsOptional()

@@ -6,31 +6,31 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 export class UserEntity {
     @PrimaryGeneratedColumn()
     @Expose()
-    id: number;
+    id!: number;
 
     @Column({ type: 'varchar', length: 255 })
     @Expose()
-    name: string;
+    name!: string;
 
     @Column({ type: 'varchar', length: 255 })
-    login: string;
+    login!: string;
 
     @Column({ type: 'varchar', length: 255 })
-    password: string;
+    password!: string;
 
     @Column({ type: 'varchar', length: 255 })
     @Expose()
-    email: string;
+    email!: string;
 
     @Column({ type: 'varchar', length: 255, array: true })
     @Expose()
-    scopes: string[];
+    scopes!: string[];
 
     @Column({ type: 'timestamp with time zone', name: 'createdAt' })
     @Expose({ name: 'created_at' })
-    createdAt: Date;
+    createdAt!: Date;
 
     @Column({ type: 'varchar', length: 255, nullable: true, name: 'shikimori_id' })
     @Expose({ name: 'shikimori_id' })
-    shikimoriId: string;
+    shikimoriId!: string;
 }

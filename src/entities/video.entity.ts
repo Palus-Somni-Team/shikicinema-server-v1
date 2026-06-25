@@ -19,7 +19,7 @@ export class VideoEntity {
     @PrimaryGeneratedColumn()
     @Expose()
     @ApiProperty({ example: 653321 })
-    id: number;
+    id!: number;
 
     @Column({ type: 'varchar', length: 2048, unique: true })
     @Expose()
@@ -69,7 +69,7 @@ export class VideoEntity {
 
     @ManyToOne(() => AnimeEntity)
     @JoinColumn({ name: 'anime_id', referencedColumnName: 'id' })
-    anime: AnimeEntity;
+    anime!: AnimeEntity;
 
     @Expose({ name: 'anime_english' })
     @ApiProperty({ example: 'One Piece', name: 'anime_english' })
