@@ -111,7 +111,7 @@ export class AnimeEntity {
     titles!: AnimeTitleEntity[];
 
     @Expose()
-    @ManyToMany(() => GenreEntity, { cascade: true })
+    @ManyToMany(() => GenreEntity)
     @JoinTable({
         name: 'anime_genres',
         joinColumn: { name: 'anime_id' },

@@ -6,3 +6,5 @@ export * from './to-anime-entity.util';
 export * from './wait-async.util';
 export * from './to-genre-entity.util';
 export * from './to-studio-entity.util';
+export * from './to-genre-relation-entity.util';
+export * from './to-studio-relation-entity.util';

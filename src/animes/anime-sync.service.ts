@@ -9,14 +9,23 @@ import { createHash } from 'crypto';
 import { enUS } from 'date-fns/locale';
 import { formatDate, formatDuration, intervalToDuration } from 'date-fns';
 
-import { AnimeEntity, AnimeTitleEntity } from '../entities';
+import {
+    AnimeEntity,
+    AnimeGenreEntity,
+    AnimeStudioEntity,
+    AnimeTitleEntity,
+    GenreEntity,
+    StudioEntity,
+} from '../entities';
 import { ShikimoriGQLService } from './shikimori-gql.service';
 import { ShikimoriAnime, ShikimoriStudio } from './types';
 import {
     getAnimeTitles,
     toAnimeEntity,
     toGenreEntity,
+    toGenreRelationEntity,
     toStudioEntity,
+    toStudioRelationEntity,
     waitAsync,
 } from '../common/utils';
 import { AlreadyProcessing, PosterNotFound } from '../domain';
@@ -41,6 +50,12 @@ export class AnimeSyncService implements OnModuleInit {
 
         @InjectRepository(AnimeTitleEntity)
         private readonly titleRepo: Repository<AnimeTitleEntity>,
+
+        @InjectRepository(AnimeGenreEntity)
+        private readonly genreRelationRepo: Repository<AnimeGenreEntity>,
+
+        @InjectRepository(AnimeStudioEntity)
+        private readonly studioRelationRepo: Repository<AnimeStudioEntity>,
 
         private readonly shikimoriGQL: ShikimoriGQLService,
 
@@ -129,9 +144,11 @@ export class AnimeSyncService implements OnModuleInit {
     }
 
     private async syncAnimeMeta(anime: ShikimoriAnime): Promise<void> {
+        const animeId = Number(anime.id);
+
         try {
             const existing = await this.animeRepo.findOne({
-                where: { id: Number(anime.id) },
+                where: { id: animeId },
                 relations: {
                     genres: true,
                     studios: true,
@@ -140,35 +157,53 @@ export class AnimeSyncService implements OnModuleInit {
 
             const entity = toAnimeEntity(anime, existing);
 
-            // обновляем жанры
-            if (anime.genres?.length) {
-                const genres = anime.genres.map((genre) => {
+            await this.animeRepo.save(entity);
+            await this.syncGenres(anime, entity);
+            await this.syncStudios(anime, entity);
+
+            this.logger.log(`Updated anime fields for id ${animeId}`);
+        } catch (err) {
+            this.logger.error(`Failed to update anime fields for id ${animeId}`, err);
+        }
+
+        await this.syncTitles(anime);
+    }
+
+    private async syncGenres({ genres, id: animeId }: ShikimoriAnime, existing?: AnimeEntity): Promise<void> {
+        if (genres?.length) {
+            await this.genreRelationRepo.manager.transaction(async (manager) => {
+                const relations = genres.map((genre) => toGenreRelationEntity(animeId, genre));
+
+                const updatedGenres = genres.map((genre) => {
                     const existingGenre = existing?.genres?.find(({ id }) => Number(genre.id) === id);
 
                     return toGenreEntity(genre, existingGenre);
                 });
 
-                entity.genres = genres;
-            }
+                await manager.save(GenreEntity, updatedGenres);
+                await manager.upsert(AnimeGenreEntity, relations, ['animeId', 'genreId']);
+            });
+        }
+    }
 
-            // обновляем студии
-            if (anime.studios?.length) {
-                const studios = anime.studios.map((studio) => {
+    private async syncStudios({ studios, id: animeId }: ShikimoriAnime, existing?: AnimeEntity): Promise<void> {
+        if (studios?.length) {
+            await this.studioRelationRepo.manager.transaction(async (manager) => {
+                const relations = studios.map((studio) => toStudioRelationEntity(animeId, studio));
+
+                const updatedStudios = studios.map((studio) => {
                     const existingStudio = existing?.studios?.find(({ id }) => Number(studio.id) === id);
 
                     return toStudioEntity(studio, existingStudio);
                 });
-                entity.studios = studios;
-            }
 
-            // сохраняем само аниме со связями
-            await this.animeRepo.save(entity);
-
-            this.logger.log(`Updated anime fields for id ${anime.id}`);
-        } catch (err) {
-            this.logger.error(`Failed to update anime fields for id ${anime.id}`, err);
+                await manager.save(StudioEntity, updatedStudios);
+                await manager.upsert(AnimeStudioEntity, relations, ['animeId', 'studioId']);
+            });
         }
+    }
 
+    private async syncTitles(anime: ShikimoriAnime): Promise<void> {
         try {
             const titles = getAnimeTitles(anime);
 
