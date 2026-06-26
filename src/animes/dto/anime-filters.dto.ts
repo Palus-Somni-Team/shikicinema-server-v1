@@ -238,4 +238,30 @@ export class AnimeFiltersDto {
     @Min(1)
     @Type(() => Number)
     durationMax?: number;
+
+    @ApiProperty({
+        description: 'Минимальное количество эпизодов',
+        type: Number,
+        required: false,
+        minimum: 0,
+        example: 12,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    @Type(() => Number)
+    episodesMin?: number;
+
+    @ApiProperty({
+        description: 'Максимальное количество эпизодов',
+        type: Number,
+        required: false,
+        minimum: 1,
+        example: 24,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    @Type(() => Number)
+    episodesMax?: number;
 }

@@ -222,6 +222,14 @@ export class AnimesService {
             qb.andWhere('anime.duration <= :durationMax', { durationMax: dto.durationMax });
         }
 
+        if (dto.episodesMin) {
+            qb.andWhere('anime.episodes_total >= :episodesMin', { episodesMin: dto.episodesMin });
+        }
+
+        if (dto.episodesMax) {
+            qb.andWhere('anime.episodes_total <= :episodesMax', { episodesMax: dto.episodesMax });
+        }
+
         if ('offset' in dto) {
             qb.skip(dto.offset || 0);
         }
