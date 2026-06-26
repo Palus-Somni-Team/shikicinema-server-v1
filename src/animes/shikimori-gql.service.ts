@@ -27,6 +27,7 @@ export class ShikimoriGQLService {
             releasedOn { year month day date }
             url
             nextEpisodeAt
+            episodes
             genres { id name russian kind }
             studios { id name imageUrl }
             related {
