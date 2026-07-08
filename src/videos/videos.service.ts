@@ -123,11 +123,6 @@ export class VideosService implements VideosServiceInterface {
             order: { episode: 'ASC' },
             skip: offset,
             take: toLimit(limit),
-            relations: {
-                anime: {
-                    titles: true
-                }
-            },
         });
     }
 
@@ -149,7 +144,6 @@ export class VideosService implements VideosServiceInterface {
                 const saved = await manager.save(VideoEntity, entity);
                 const uploaded = await manager.findOne(VideoEntity, {
                     where: { id: saved.id },
-                    relations: { anime: { titles: true } },
                 });
     
                 if (!uploaded) {
