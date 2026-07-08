@@ -71,18 +71,6 @@ export class VideoEntity {
     @JoinColumn({ name: 'anime_id', referencedColumnName: 'id' })
     anime!: AnimeEntity;
 
-    @Expose({ name: 'anime_english' })
-    @ApiProperty({ example: 'One Piece', name: 'anime_english' })
-    get animeEnglish(): string | null {
-        return selectAnimeName(this.anime?.titles, 'en');
-    }
-
-    @Expose({ name: 'anime_russian' })
-    @ApiProperty({ example: 'Ванпис', name: 'anime_russian' })
-    get animeRussian(): string | null {
-        return selectAnimeName(this.anime?.titles, 'ru');
-    }
-
     constructor(
         animeId: number,
         episode: number,
