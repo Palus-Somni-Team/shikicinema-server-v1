@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
+import { HttpModule } from '@nestjs/axios';
 
 import { AnimesController } from './animes.controller';
 import { AnimesService } from './animes.service';
@@ -17,6 +18,7 @@ import {
 
 @Module({
     imports: [
+      HttpModule,
       TypeOrmModule.forFeature([
         AnimeEntity,
         AnimeTitleEntity,

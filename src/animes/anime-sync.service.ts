@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +9,7 @@ import { Cron } from '@nestjs/schedule';
 import { createHash } from 'crypto';
 import { enUS } from 'date-fns/locale';
 import { formatDate, formatDuration, intervalToDuration } from 'date-fns';
+import { firstValueFrom } from 'rxjs';
 
 import {
     AnimeEntity,
@@ -62,6 +64,8 @@ export class AnimeSyncService implements OnModuleInit {
         private readonly alert: AlertService,
 
         private readonly meilisearch: MeilisearchService,
+
+        private readonly http: HttpService,
     ) {}
 
     async onModuleInit() {
@@ -218,15 +222,15 @@ export class AnimeSyncService implements OnModuleInit {
     }
 
     private async fetchImage(url: string): Promise<Buffer> {
-        const headers = { 'User-Agent': 'Shikicinema/1.0' };
-        const response = await fetch(url, { headers })
-            .catch(() => { throw new PosterNotFound(url) });
+        try {
+            const response = await firstValueFrom(
+                this.http.get(url, { responseType: 'arraybuffer' }),
+            );
 
-        if (!response.ok) {
+            return Buffer.from(response.data);
+        } catch {
             throw new PosterNotFound(url);
         }
-
-        return Buffer.from(await response.arrayBuffer());
     }
 
     private async isHashMatches(buffer: Buffer, existingPath: string): Promise<boolean> {

@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { GraphQLClient } from 'graphql-request';
 import { ShikimoriAnime } from './types';
+import { version } from '../../package.json';
 
 @Injectable()
 export class ShikimoriGQLService {
     readonly client = new GraphQLClient(
         `${process.env.SHIKIMORI_API}/api/graphql`,
-        { headers: { 'User-Agent': 'Shikicinema/1.0' } },
+        { headers: { 'User-Agent': `Shikicinema/${version}` } },
     );
 
     private fields(): string {
