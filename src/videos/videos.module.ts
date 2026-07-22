@@ -9,7 +9,11 @@ import { AuthModule } from '../auth/auth.module';
 @Module({
     imports: [
         AuthModule,
-        TypeOrmModule.forFeature([VideoEntity, AnimeEntity, AnimeTitleEntity]),
+        TypeOrmModule.forFeature([
+            VideoEntity,
+            AnimeEntity,
+            AnimeTitleEntity,
+        ]),
     ],
     controllers: [VideosController],
     providers: [VideosService],

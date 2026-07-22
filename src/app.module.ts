@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { KeyvCacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
+import { HttpModule } from '@nestjs/axios';
 
 import { entities, subscribers } from './entities';
 import { VideosModule } from './videos/videos.module';
@@ -16,9 +17,15 @@ import { MailerModule } from './mailer/mailer.module';
 import { AlertModule } from './common/services/alert';
 import { MeilisearchModule } from './common/services/meilisearch';
 import { StudiosModule } from './studios/studios.module';
+import { OAuthModule } from './oauth/oauth.module';
+import { UploaderModule } from './uploader/uploader.module';
+import { version } from '../package.json';
 
 @Module({
     imports: [
+        HttpModule.register({
+            headers: { 'User-Agent': `Shikicinema/${version}` },
+        }),
         ConfigModule.forRoot(),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule, LoggerModule],
@@ -57,6 +64,8 @@ import { StudiosModule } from './studios/studios.module';
         AlertModule,
         MeilisearchModule,
         StudiosModule,
+        OAuthModule,
+        UploaderModule,
     ],
 })
 export class AppModule {}

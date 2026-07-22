@@ -7,6 +7,8 @@ export { GenreEntity } from './genre.entity';
 export { StudioEntity } from './studio.entity';
 export { AnimeGenreEntity } from './anime-genre.entity';
 export { AnimeStudioEntity } from './anime-studio.entity';
+export { UploadTokenEntity } from './upload-token.entity';
+export { UploaderEntity } from './uploader.entity'; 
 
 import { VideoEntity } from './video.entity';
 import { AccessTokenEntity } from './access-token.entity';
@@ -19,6 +21,8 @@ import { AnimeGenreEntity } from './anime-genre.entity';
 import { AnimeStudioEntity } from './anime-studio.entity';
 
 import { StudioPosterSubscriber } from './subscribers';
+import { UploadTokenEntity } from './upload-token.entity';
+import { UploaderEntity } from './uploader.entity';
 
 export const entities = [
     VideoEntity,
@@ -30,6 +34,8 @@ export const entities = [
     StudioEntity,
     AnimeGenreEntity,
     AnimeStudioEntity,
+    UploadTokenEntity,
+    UploaderEntity,
 ];
 
 export const subscribers = [
