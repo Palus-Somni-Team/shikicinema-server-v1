@@ -39,8 +39,6 @@ import { AnimeLengthSchema, ContributionsCountSchema } from './schemas';
 @Controller('shikivideos')
 export class VideosController {
 	constructor(
-		@Inject(CACHE_MANAGER)
-		private readonly _cache: Cache,
 		private readonly _videos: VideosService,
 	) {}
 
@@ -62,10 +60,6 @@ export class VideosController {
 	async createVideo(@Req() req: any, @Query() video: CreateVideoDto) {
 		try {
 			const created = await this._videos.createVideo(video, req.uploader);
-
-			// чистим вообще для всего, т.к сбрасывать отдельно
-			// для нужного animeId - замучаемся
-			await this._cache.clear();
 
 			return created;
 		} catch (e) {
